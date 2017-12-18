@@ -1,0 +1,35 @@
+{
+  "status": "Draft",
+  "createdDate": "2017-12-18T09:44:16.223+0000",
+  "lastModifiedDate": "2017-12-18T09:44:16.223+0000",
+  "createdBy": "usr-12345678-d7dc-47e8-992f-098765432109",
+  "lastModifiedBy": "usr-12345678-d7dc-47e8-992f-098765432109",
+  "team": {
+    "name": "test-team",
+    "_links": {
+      "submissions": {
+        "href": "https://example.com/api/submissions/search/by-team?teamName=test-team"
+      },
+      "submissions:create": {
+        "href": "https://example.com/api/teams/test-team/submissions"
+      },
+      "items": {
+        "href": "https://example.com/api/teams/test-team/items"
+      }
+    }
+  },
+  "_links": {
+    "self": {
+      "href": "https://example.com/api/submissionStatuses/12345678-abcd-efab-cdef-123456789012"
+    },
+    "submissionStatus": {
+      "href": "https://example.com/api/submissionStatuses/12345678-abcd-efab-cdef-123456789012"
+    },
+    "statusDescription": {
+      "href": "https://example.com/api/statusDescriptions/submissionStatuses/Draft"
+    },
+    "availableStatuses": {
+      "href": "https://example.com/api/submissions/33334444-aaaa-bbbb-cccc-123456789012/availableSubmissionStatuses"
+    }
+  }
+}
