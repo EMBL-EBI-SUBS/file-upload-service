@@ -18,7 +18,9 @@ import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Date;
 
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.contains;
+import static org.hamcrest.core.Is.is;
 
 /**
  * @author Amelie Cornelis  <ameliec@ebi.ac.uk>
@@ -53,7 +55,7 @@ public class TokenHandlerServiceTest {
         claims.setClaim("name", "Alice Wonderland");
         String validToken = JWTHelper.build(claims, signingKey, AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
 
-        subject.validateToken(validToken);
+        assertThat(subject.validateToken(validToken), is(true));
     }
 
     @Test

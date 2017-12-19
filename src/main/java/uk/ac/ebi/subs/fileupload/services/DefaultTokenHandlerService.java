@@ -40,7 +40,7 @@ public class DefaultTokenHandlerService implements TokenHandlerService {
     }
 
     @Override
-    public void validateToken(String token) {
+    public boolean validateToken(String token) {
         try {
             jwtConsumer.processToClaims(token);
         } catch (InvalidJwtException e ) {
@@ -48,6 +48,8 @@ public class DefaultTokenHandlerService implements TokenHandlerService {
         } catch (Exception e) {
             throw new RuntimeException("Cannot parse token: "+e.getMessage(), e);
         }
+
+        return true;
     }
 
 
