@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.subs.data.status.SubmissionStatus;
-import uk.ac.ebi.subs.fileupload.errors.SubmissionNotExistsException;
+import uk.ac.ebi.subs.fileupload.errors.SubmissionNotFoundException;
 
 @Service
 public class DefaultSubmissionService implements SubmissionService {
@@ -25,14 +25,14 @@ public class DefaultSubmissionService implements SubmissionService {
     }
 
     @Override
-    public String getSubmissionStatus(String submissionUuid) throws SubmissionNotExistsException {
+    public String getSubmissionStatus(String submissionUuid) throws SubmissionNotFoundException {
         ResponseEntity<SubmissionStatus> submissionStatusResponse;
         try {
             submissionStatusResponse = restTemplate.getForEntity(
                     String.format(submissionStatusURI, serviceHost, submissionUuid), SubmissionStatus.class);
         } catch (HttpClientErrorException httpClientException) {
             if (httpClientException.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                throw new SubmissionNotExistsException();
+                throw new SubmissionNotFoundException(submissionUuid);
             } else {
                 throw httpClientException;
             }

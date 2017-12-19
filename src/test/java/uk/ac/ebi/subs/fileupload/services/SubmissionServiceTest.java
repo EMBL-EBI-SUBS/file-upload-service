@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
-import uk.ac.ebi.subs.fileupload.errors.SubmissionNotExistsException;
+import uk.ac.ebi.subs.fileupload.errors.SubmissionNotFoundException;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +47,7 @@ public class SubmissionServiceTest {
     @Test
     public void getSubmissionStatusByInvalidIdShouldReturnSubmissionNotExistsError() {
         String invalidSubmissionUuid = "11112222-aaaa-bbbb-cccc-123456789012";
+        String SUBMISSION_NOT_EXISTS_MESSAGE = "Submission not found with id: %s";
 
         this.server.expect(
                 requestTo(String.format(submissionStatusURI, serviceHost, invalidSubmissionUuid)))
@@ -54,7 +55,8 @@ public class SubmissionServiceTest {
                 .andRespond(withStatus(HttpStatus.NOT_FOUND)
         );
 
-        this.thrown.expect(SubmissionNotExistsException.class);
+        this.thrown.expect(SubmissionNotFoundException.class);
+        this.thrown.expectMessage(String.format(SUBMISSION_NOT_EXISTS_MESSAGE, invalidSubmissionUuid));
 
         submissionService.getSubmissionStatus(invalidSubmissionUuid);
     }
