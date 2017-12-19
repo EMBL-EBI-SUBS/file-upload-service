@@ -17,8 +17,6 @@ import java.security.PrivateKey;
  */
 public class JWTHelper {
 
-    static final long ttlMins = 5;
-    static final String username = "user1";
     @Value("${security.issuer}")
     private static String issuer;
 
@@ -31,6 +29,9 @@ public class JWTHelper {
     }
 
     public static String token(PrivateKey privateKey, String alg) {
+        long ttlMins = 5;
+        String username = "user1";
+
         JwtClaims claims = new JwtClaims();
         claims.setIssuer(issuer);
         claims.setExpirationTimeMinutesInTheFuture(ttlMins);

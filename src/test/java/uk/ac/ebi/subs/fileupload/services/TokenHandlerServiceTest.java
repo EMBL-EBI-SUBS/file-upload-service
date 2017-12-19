@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.fileupload.security;
+package uk.ac.ebi.subs.fileupload.services;
 
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jwt.JwtClaims;
@@ -7,7 +7,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ebi.subs.fileupload.errors.InvalidTokenException;
+import uk.ac.ebi.subs.fileupload.security.JWTHelper;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -24,9 +26,10 @@ import static org.mockito.Matchers.contains;
  *
  * @author Karoly Erdos     <karoly@ebi.ac.uk>
  */
-public class TokenHandlerTest {
+public class TokenHandlerServiceTest {
 
-    private TokenHandler subject;
+    private TokenHandlerService subject;
+
     static final private String username = "user1";
     private PrivateKey signingKey;
     private PublicKey verifyingKey;
@@ -40,8 +43,8 @@ public class TokenHandlerTest {
         KeyPair testKeyPair = keyGen.generateKeyPair();
         signingKey = testKeyPair.getPrivate();
         verifyingKey = testKeyPair.getPublic();
-        subject = new TokenHandler();
-        subject.setJwtConsumer(verifyingKey);
+        subject = new DefaultTokenHandlerService();
+        subject.setJwtConsumer(subject.configureJwtConsumer(verifyingKey));
     }
 
     @Test
