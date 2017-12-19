@@ -1,0 +1,3 @@
+subs-api:
+  host: https://example.com
+  submissionStatusURI: "%s/api/submissions/%s/submissionStatus"
