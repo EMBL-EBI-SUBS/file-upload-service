@@ -13,10 +13,11 @@ import javax.annotation.PostConstruct;
 /**
  * Verify token validity.
  *
- * @author Amelie Cornelis  <ameliec@ebi.ac.uk>
- * @since 18/07/2016.
+ * See the original code concept at
+ * <a href="https://github.com/EMBL-EBI-TSI/aap-client-java/blob/master/security/src/main/java/uk/ac/ebi/tsc/aap/client/security/TokenHandler.java">
+ * TokenHandler class - AAP Team at EMBL-EBI</a>
  *
- * @author Karoly Erdos     <karoly@ebi.ac.uk>
+ * This is a slightly modified version of the above mentioned code.
  */
 @Service
 public class DefaultTokenHandlerService implements TokenHandlerService {

@@ -12,8 +12,11 @@ import java.security.PrivateKey;
 
 /**
  *
- * @author Uppendra Kumbham  <ukumbham@ebi.ac.uk>
- * @author Karoly Erdos <karoly@ebi.ac.uk>
+ * See the original code concept at
+ * <a href="https://github.com/EMBL-EBI-TSI/aap-client-java/blob/master/security/src/test/java/uk/ac/ebi/tsc/aap/client/security/JWTHelper.java">
+ * JWTHelper class - AAP Team at EMBL-EBI</a>
+ *
+ * This is a slightly modified version of the above mentioned code.
  */
 public class JWTHelper {
 

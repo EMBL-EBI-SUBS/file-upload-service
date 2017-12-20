@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ebi.subs.fileupload.errors.InvalidTokenException;
 import uk.ac.ebi.subs.fileupload.security.JWTHelper;
 
@@ -18,15 +17,16 @@ import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Date;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.contains;
-import static org.hamcrest.core.Is.is;
 
 /**
- * @author Amelie Cornelis  <ameliec@ebi.ac.uk>
- * @since 21/07/2016.
+ * See the original code concept at
+ * <a href="https://github.com/EMBL-EBI-TSI/aap-client-java/blob/master/security/src/test/java/uk/ac/ebi/tsc/aap/client/security/TokenHandlerTest.java">
+ * TokenHandlerTest class - AAP Team at EMBL-EBI</a>
  *
- * @author Karoly Erdos     <karoly@ebi.ac.uk>
+ * This is a slightly modified version of the above mentioned code.
  */
 public class TokenHandlerServiceTest {
 
@@ -99,7 +99,7 @@ public class TokenHandlerServiceTest {
     }
 
     @Test
-    public void whenTokemExpired_thenValidationShouldThrowException() {
+    public void whenTokenExpired_thenValidationShouldThrowException() {
         this.thrown.expect(InvalidTokenException.class);
         this.thrown.expectMessage(contains("Cannot parse token"));
 
