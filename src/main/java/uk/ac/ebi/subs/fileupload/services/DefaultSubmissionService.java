@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.subs.data.status.SubmissionStatus;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.fileupload.errors.SubmissionNotFoundException;
 
 @Service
@@ -39,5 +40,11 @@ public class DefaultSubmissionService implements SubmissionService {
         }
 
         return submissionStatusResponse.getBody().getStatus();
+    }
+
+    @Override
+    public boolean isModifiable(String submissionUuid) throws SubmissionNotFoundException {
+
+        return getSubmissionStatus(submissionUuid).equals(SubmissionStatusEnum.Draft.name());
     }
 }
