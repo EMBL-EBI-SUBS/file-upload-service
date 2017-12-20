@@ -1,3 +1,6 @@
 subs-api:
   host: https://example.com
   submissionStatusURI: "%s/api/submissions/%s/submissionStatus"
+
+security:
+  issuer: https://some.secure.com

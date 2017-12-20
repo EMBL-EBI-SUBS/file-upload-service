@@ -81,7 +81,7 @@ public class SubmissionServiceTest {
     }
 
     @Test
-    public void getSubmissionStatusByValidIdWithSubmittedStatusShouldReturnTheSubmissionStatus() throws IOException {
+    public void getSubmissionStatusByValidIdWithSubmittedStatusShouldReturnTheSubmissionStatus() throws Exception {
         String validSubmittedSubmissionUuid = "55556666-aaaa-bbbb-cccc-123456789012";
 
         File submissionJson = new File(getClass().getClassLoader()
@@ -97,5 +97,39 @@ public class SubmissionServiceTest {
         String submissionStatus = submissionService.getSubmissionStatus(validSubmittedSubmissionUuid);
 
         assertThat(submissionStatus, is(equalTo("Submitted")));
+    }
+
+    @Test
+    public void whenSubmissionStatusIsSubmittedThenSubmissionIsNotModifiable() throws Exception {
+        String submittedSubmissionUuid = "55556666-aaaa-bbbb-cccc-123456789012";
+
+        File submissionJson = new File(getClass().getClassLoader()
+                .getResource("submittedSubmissionStatusByValidSubmissionId.json").getFile());
+        String content = new String(Files.readAllBytes(submissionJson.toPath()));
+
+        this.server.expect(
+                requestTo(String.format(submissionStatusURI, serviceHost, submittedSubmissionUuid)))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
+                );
+
+        assertThat(submissionService.isModifiable(submittedSubmissionUuid), is(false));
+    }
+
+    @Test
+    public void whenSubmissionStatusIsDraftThenSubmissionIsModifiable() throws Exception {
+        String draftSubmissionUuid = "33334444-aaaa-bbbb-cccc-123456789012";
+
+        File submissionJson = new File(getClass().getClassLoader()
+                .getResource("draftSubmissionStatusByValidSubmissionId.json").getFile());
+        String content = new String(Files.readAllBytes(submissionJson.toPath()));
+
+        this.server.expect(
+                requestTo(String.format(submissionStatusURI, serviceHost, draftSubmissionUuid)))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
+                );
+
+        assertThat(submissionService.isModifiable(draftSubmissionUuid), is(true));
     }
 }

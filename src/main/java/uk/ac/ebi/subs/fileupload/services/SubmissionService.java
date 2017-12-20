@@ -9,4 +9,6 @@ import uk.ac.ebi.subs.fileupload.errors.SubmissionNotFoundException;
 public interface SubmissionService {
 
     String getSubmissionStatus(String submissionUuid) throws SubmissionNotFoundException;
+
+    boolean isModifiable(String submissionUuid) throws SubmissionNotFoundException;
 }
