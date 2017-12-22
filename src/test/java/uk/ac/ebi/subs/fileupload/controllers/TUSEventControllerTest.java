@@ -16,6 +16,7 @@ import uk.ac.ebi.subs.fileupload.services.ValidationService;
 import uk.ac.ebi.subs.fileupload.util.TUSEvent;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,7 +66,7 @@ public class TUSEventControllerTest {
         String unknownEventName = "unknown event";
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
-        given(this.validationService.validateFileUploadRequest(VALID_TOKEN, VALID_SUBMISSION_UUID)).willReturn(true);
+        given(this.validationService.validateFileUploadRequest(eq(VALID_TOKEN), eq(VALID_SUBMISSION_UUID))).willReturn(true);
 
         this.mockMvc.perform(post("/tusevent")
                 .accept(MediaType.APPLICATION_JSON)
