@@ -18,6 +18,7 @@ import java.util.Base64;
 import java.util.Date;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.contains;
 
@@ -60,8 +61,8 @@ public class TokenHandlerServiceTest {
 
     @Test
     public void whenTokenIsTampered_thenValidationShouldThrowException() throws Exception {
-        this.thrown.expect(InvalidTokenException.class);
-        this.thrown.expectMessage(contains("Cannot parse token"));
+        thrown.expect(InvalidTokenException.class);
+        thrown.expectMessage(containsString("Cannot parse token"));
 
         String validToken = JWTHelper.token();
         String encodedPayload = validToken.split("\\.")[1];
@@ -75,8 +76,8 @@ public class TokenHandlerServiceTest {
 
     @Test
     public void whenTokenSignedWithDifferentPrivateKey_thenValidationShouldThrowException() throws Exception {
-        this.thrown.expect(InvalidTokenException.class);
-        this.thrown.expectMessage(contains("Cannot parse token"));
+        thrown.expect(InvalidTokenException.class);
+        thrown.expectMessage(containsString("Cannot parse token"));
 
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
         PrivateKey privateKey = keyGen.generateKeyPair().getPrivate();
@@ -87,8 +88,8 @@ public class TokenHandlerServiceTest {
 
     @Test
     public void whenTokenSignedWithDifferentAlgorithm_thenValidationShouldThrowException() throws Exception {
-        this.thrown.expect(InvalidTokenException.class);
-        this.thrown.expectMessage(contains("Cannot parse token"));
+        thrown.expect(InvalidTokenException.class);
+        thrown.expectMessage(containsString("Cannot parse token"));
 
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(2048);
@@ -100,8 +101,8 @@ public class TokenHandlerServiceTest {
 
     @Test
     public void whenTokenExpired_thenValidationShouldThrowException() {
-        this.thrown.expect(InvalidTokenException.class);
-        this.thrown.expectMessage(contains("Cannot parse token"));
+        thrown.expect(InvalidTokenException.class);
+        thrown.expectMessage(containsString("Cannot parse token"));
 
         String expiredToken = expiredToken();
         subject.validateToken(expiredToken);
