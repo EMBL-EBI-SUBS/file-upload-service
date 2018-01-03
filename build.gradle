@@ -10,6 +10,10 @@ buildscript {
 	}
 }
 
+plugins {
+	id 'com.sourcemuse.mongo' version '1.0.0'
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
@@ -43,4 +47,9 @@ test {
 		exceptionFormat "full"
 	}
 	runWithMongoDb = true
+}
+
+
+mongo {
+	mongoVersion = "3.4.3"
 }
