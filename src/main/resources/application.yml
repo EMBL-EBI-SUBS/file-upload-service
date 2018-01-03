@@ -4,3 +4,4 @@ subs-api:
 
 security:
   issuer: https://some.secure.com
+  certificatePath: test_public_key.der
