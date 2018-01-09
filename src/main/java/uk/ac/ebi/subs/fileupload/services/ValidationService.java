@@ -1,5 +1,8 @@
 package uk.ac.ebi.subs.fileupload.services;
 
+/**
+ * This class is responsible for validating the requests sent by the tusd server.
+ */
 public interface ValidationService {
 
     /**

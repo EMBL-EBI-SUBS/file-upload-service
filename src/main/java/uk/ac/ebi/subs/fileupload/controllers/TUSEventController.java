@@ -16,7 +16,7 @@ import uk.ac.ebi.subs.fileupload.errors.FileApiError;
 import uk.ac.ebi.subs.fileupload.eventhandlers.EventHandlerSupplier;
 import uk.ac.ebi.subs.fileupload.eventhandlers.TusEvent;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.services.ValidationService;
+import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 
 /**
  * This is a REST controller that responsible for handling HTTP POST request events
@@ -27,10 +27,10 @@ public class TUSEventController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TUSEventController.class);
 
-    private ValidationService validationService;
+    private EventHandlerService eventHandlerService;
 
-    public TUSEventController(ValidationService validationService) {
-        this.validationService = validationService;
+    public TUSEventController(EventHandlerService eventHandlerService) {
+        this.eventHandlerService = eventHandlerService;
     }
 
     @RequestMapping(value = "/tusevent", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -45,7 +45,7 @@ public class TUSEventController {
         TusEvent tusEvent = null;
         try {
             tusEvent = eventHandlerSupplier.supplyEventHandler(eventName);
-            response = tusEvent.handle(tusFileInfo, validationService);
+            response = tusEvent.handle(tusFileInfo, eventHandlerService);
         } catch (IllegalArgumentException ex) {
             FileApiError fileApiError = new FileApiError(HttpStatus.NOT_ACCEPTABLE, ErrorMessages.NOT_SUPPORTED_EVENT);
             response = new ResponseEntity<>(fileApiError, HttpStatus.NOT_ACCEPTABLE);

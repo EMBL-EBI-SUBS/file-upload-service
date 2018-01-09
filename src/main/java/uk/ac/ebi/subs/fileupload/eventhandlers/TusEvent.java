@@ -2,7 +2,7 @@ package uk.ac.ebi.subs.fileupload.eventhandlers;
 
 import org.springframework.http.ResponseEntity;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.services.ValidationService;
+import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 
 /**
  * Interface used by the {@code EventHandlerSupplier} to instantiate the proper handler
@@ -10,5 +10,5 @@ import uk.ac.ebi.subs.fileupload.services.ValidationService;
  */
 public interface TusEvent {
 
-    ResponseEntity<Object> handle(TUSFileInfo tusFileInfo, ValidationService validationService);
+    ResponseEntity<Object> handle(TUSFileInfo tusFileInfo, EventHandlerService eventHandlerService);
 }
