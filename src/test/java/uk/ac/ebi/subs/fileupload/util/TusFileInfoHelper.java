@@ -4,10 +4,11 @@ import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 
 public class TusFileInfoHelper {
 
-    public static TUSFileInfo generateTUSFileInfo(String jwtToken, String sunmissionId) {
+    public static TUSFileInfo generateTUSFileInfo(String jwtToken, String sunmissionId, String filename) {
         TUSFileInfo fileInfo = new TUSFileInfo();
+        fileInfo.setId(1L);
         fileInfo.setMetadata(
-                TUSFileInfo.buildMetaData("test file name", sunmissionId, jwtToken));
+                TUSFileInfo.buildMetaData(filename, sunmissionId, jwtToken));
 
         return fileInfo;
     }

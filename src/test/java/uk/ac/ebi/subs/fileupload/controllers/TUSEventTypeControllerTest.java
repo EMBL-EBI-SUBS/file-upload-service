@@ -45,10 +45,11 @@ public class TUSEventTypeControllerTest {
     private static final String INVALID_SUBMISSION_UUID = "12345";
     private static final String VALID_TOKEN = "valid.token.value";
     private static final String VALID_SUBMISSION_UUID = "12345";
+    private static final String FILENAME = "test_file.cram";
 
     @Test
     public void whenEventNameUnknownAndTokenInvalidOrSubmissionNotFound_ThenValidationFails() throws Exception {
-        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(INVALID_TOKEN, INVALID_SUBMISSION_UUID);
+        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(INVALID_TOKEN, INVALID_SUBMISSION_UUID, FILENAME);
         String unknownEventName = "unknown event";
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
@@ -69,7 +70,7 @@ public class TUSEventTypeControllerTest {
 
     @Test
     public void whenEventNameInvalidAndTokenValidAndSubmissionExists_ThenValidationFails() throws Exception {
-        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID);
+        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID, FILENAME);
         String unknownEventName = "unknown event";
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
@@ -90,7 +91,7 @@ public class TUSEventTypeControllerTest {
 
     @Test
     public void whenEventNameValidAndTokenInvalidOrSubmissionNotFound_ThenValidationFails() throws Exception {
-        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(INVALID_TOKEN, INVALID_SUBMISSION_UUID);
+        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(INVALID_TOKEN, INVALID_SUBMISSION_UUID, FILENAME);
         String eventName = TUSEventType.PRE_CREATE.getEventType();
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
@@ -111,7 +112,7 @@ public class TUSEventTypeControllerTest {
 
     @Test
     public void whenEventNameValidAndTokenValidAndSubmissionExists_ThenValidationSucceed() throws Exception {
-        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID);
+        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID, FILENAME);
         String eventName = TUSEventType.PRE_CREATE.getEventType();
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
