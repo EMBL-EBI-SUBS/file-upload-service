@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,8 +13,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
+import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
+import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 import uk.ac.ebi.subs.fileupload.services.ValidationService;
-import uk.ac.ebi.subs.fileupload.util.TUSEvent;
+import uk.ac.ebi.subs.fileupload.util.TUSEventType;
+import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
@@ -23,8 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(TUSEventController.class)
-public class TUSEventControllerTest {
+@WebMvcTest(value = {TUSEventController.class, FileRepository.class, EventHandlerService.class})
+public class TUSEventTypeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -34,6 +38,9 @@ public class TUSEventControllerTest {
     @MockBean
     private ValidationService validationService;
 
+    @MockBean
+    private FileRepository fileRepository;
+
     private static final String INVALID_TOKEN = "invalid.token.value";
     private static final String INVALID_SUBMISSION_UUID = "12345";
     private static final String VALID_TOKEN = "valid.token.value";
@@ -41,7 +48,7 @@ public class TUSEventControllerTest {
 
     @Test
     public void whenEventNameUnknownAndTokenInvalidOrSubmissionNotFound_ThenValidationFails() throws Exception {
-        TUSFileInfo tusFileInfo = generateTUSFileInfo(INVALID_TOKEN, INVALID_SUBMISSION_UUID);
+        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(INVALID_TOKEN, INVALID_SUBMISSION_UUID);
         String unknownEventName = "unknown event";
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
@@ -62,7 +69,7 @@ public class TUSEventControllerTest {
 
     @Test
     public void whenEventNameInvalidAndTokenValidAndSubmissionExists_ThenValidationFails() throws Exception {
-        TUSFileInfo tusFileInfo = generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID);
+        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID);
         String unknownEventName = "unknown event";
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
@@ -83,8 +90,8 @@ public class TUSEventControllerTest {
 
     @Test
     public void whenEventNameValidAndTokenInvalidOrSubmissionNotFound_ThenValidationFails() throws Exception {
-        TUSFileInfo tusFileInfo = generateTUSFileInfo(INVALID_TOKEN, INVALID_SUBMISSION_UUID);
-        String eventName = TUSEvent.PRE_CREATE.getEventType();
+        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(INVALID_TOKEN, INVALID_SUBMISSION_UUID);
+        String eventName = TUSEventType.PRE_CREATE.getEventType();
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
         given(this.validationService.validateFileUploadRequest(INVALID_TOKEN, INVALID_SUBMISSION_UUID)).willReturn(false);
@@ -104,8 +111,8 @@ public class TUSEventControllerTest {
 
     @Test
     public void whenEventNameValidAndTokenValidAndSubmissionExists_ThenValidationSucceed() throws Exception {
-        TUSFileInfo tusFileInfo = generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID);
-        String eventName = TUSEvent.PRE_CREATE.getEventType();
+        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID);
+        String eventName = TUSEventType.PRE_CREATE.getEventType();
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
         given(this.validationService.validateFileUploadRequest(VALID_TOKEN, VALID_SUBMISSION_UUID)).willReturn(true);
@@ -118,13 +125,5 @@ public class TUSEventControllerTest {
         )
                 .andDo(print())
                 .andExpect(status().isOk());
-    }
-
-    private TUSFileInfo generateTUSFileInfo(String jwtToken, String sunmissionId) {
-        TUSFileInfo fileInfo = new TUSFileInfo();
-        fileInfo.setMetadata(
-                TUSFileInfo.buildMetaData("test file name", sunmissionId, jwtToken));
-
-        return fileInfo;
     }
 }

@@ -9,6 +9,9 @@ import java.security.PublicKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+/**
+ * This class responsible for validating the JWT token.
+ */
 public interface TokenHandlerService {
 
     boolean validateToken(String token);

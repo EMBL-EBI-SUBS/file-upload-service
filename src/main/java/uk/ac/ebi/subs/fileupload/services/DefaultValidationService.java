@@ -19,6 +19,8 @@ public class DefaultValidationService implements ValidationService {
         boolean isValidToken = tokenHandlerService.validateToken(jwt);
         boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid);
 
+        // TODO: add validation whether the user who is uploading the file has permission to modify the submission
+
         return isValidToken && isSubmissionModifiable;
     }
 

@@ -13,9 +13,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.FileApiError;
+import uk.ac.ebi.subs.fileupload.eventhandlers.EventHandlerSupplier;
+import uk.ac.ebi.subs.fileupload.eventhandlers.TusEvent;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.services.ValidationService;
-import uk.ac.ebi.subs.fileupload.util.TUSEvent;
+import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 
 /**
  * This is a REST controller that responsible for handling HTTP POST request events
@@ -26,10 +27,10 @@ public class TUSEventController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TUSEventController.class);
 
-    private ValidationService validationService;
+    private EventHandlerService eventHandlerService;
 
-    public TUSEventController(ValidationService validationService) {
-        this.validationService = validationService;
+    public TUSEventController(EventHandlerService eventHandlerService) {
+        this.eventHandlerService = eventHandlerService;
     }
 
     @RequestMapping(value = "/tusevent", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -40,21 +41,12 @@ public class TUSEventController {
         LOGGER.info(tusFileInfo.toString());
         ResponseEntity<Object> response;
 
-        String jwtToken = tusFileInfo.getMetadata().getJwtToken();
-        String submissionId = tusFileInfo.getMetadata().getSubmissionID();
-
-        // TODO: karoly - refactor it using the command pattern to use it with more event types
-        boolean isValidRequest;
-        if (eventName.equals(TUSEvent.PRE_CREATE.getEventType())) {
-            isValidRequest = validationService.validateFileUploadRequest(jwtToken, submissionId);
-            if (isValidRequest) {
-                response = new ResponseEntity<>(HttpStatus.OK);
-            } else {
-                // make it an error object
-                FileApiError fileApiError = new FileApiError(HttpStatus.NOT_ACCEPTABLE, ErrorMessages.INVALID_PARAMETERS);
-                response = new ResponseEntity<>(fileApiError, HttpStatus.NOT_ACCEPTABLE);
-            }
-        } else {
+        EventHandlerSupplier eventHandlerSupplier = new EventHandlerSupplier();
+        TusEvent tusEvent = null;
+        try {
+            tusEvent = eventHandlerSupplier.supplyEventHandler(eventName);
+            response = tusEvent.handle(tusFileInfo, eventHandlerService);
+        } catch (IllegalArgumentException ex) {
             FileApiError fileApiError = new FileApiError(HttpStatus.NOT_ACCEPTABLE, ErrorMessages.NOT_SUPPORTED_EVENT);
             response = new ResponseEntity<>(fileApiError, HttpStatus.NOT_ACCEPTABLE);
         }
