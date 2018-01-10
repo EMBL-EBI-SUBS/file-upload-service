@@ -8,6 +8,7 @@ import uk.ac.ebi.subs.fileupload.errors.FileApiError;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
 import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
+import uk.ac.ebi.subs.fileupload.util.FileStatus;
 
 @Service
 public class DefaultEventHandlerService implements EventHandlerService {
@@ -41,6 +42,14 @@ public class DefaultEventHandlerService implements EventHandlerService {
 
     @Override
     public ResponseEntity<Object> persistOrUpdateFileInformation(File file) {
+        if (file.getStatus().equals(FileStatus.UPLOADING)) {
+            File persistedFile = fileRepository.findByFilenameAndSubmissionId(file.getFilename(), file.getSubmissionId());
+
+            if (persistedFile == null) {
+                FileApiError fileApiError = new FileApiError(HttpStatus.NOT_FOUND, ErrorMessages.FILE_DOCUMENT_NOT_FOUND);
+                return new ResponseEntity<>(fileApiError, HttpStatus.NOT_FOUND);
+            }
+        }
 
         fileRepository.save(file);
 
