@@ -26,6 +26,7 @@ public class PreCreateEventTest {
     private TUSFileInfo tusFileInfo;
     private static final String JWT_TOKEN = "xxxxx.yyyyy.zzzz";
     private static final String SUBMISSION_UUID = "submission_1234";
+    private static final String FILENAME = "test_file.cram";
 
     @MockBean
     private ValidationService validationService;
@@ -35,7 +36,7 @@ public class PreCreateEventTest {
 
     @Before
     public void setup() {
-        tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(JWT_TOKEN, SUBMISSION_UUID);
+        tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(JWT_TOKEN, SUBMISSION_UUID, FILENAME);
     }
 
     @Test

@@ -8,7 +8,6 @@ import uk.ac.ebi.subs.fileupload.errors.FileApiError;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
 import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
-import uk.ac.ebi.subs.fileupload.repository.util.FileHelper;
 
 @Service
 public class DefaultEventHandlerService implements EventHandlerService {
@@ -41,9 +40,9 @@ public class DefaultEventHandlerService implements EventHandlerService {
     }
 
     @Override
-    public ResponseEntity<Object> persistFileInformation(TUSFileInfo tusFileInfo) {
-        File file = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
-        fileRepository.insert(file);
+    public ResponseEntity<Object> persistOrUpdateFileInformation(File file) {
+
+        fileRepository.save(file);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
