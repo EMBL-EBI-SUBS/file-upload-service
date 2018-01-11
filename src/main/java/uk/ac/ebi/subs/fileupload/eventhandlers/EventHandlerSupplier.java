@@ -18,6 +18,8 @@ public class EventHandlerSupplier {
     static {
         final Map<String, Supplier<TusEvent>> eventhandlers = new HashMap<>();
         eventhandlers.put(TUSEventType.PRE_CREATE.getEventType(), PreCreateEvent::new);
+        eventhandlers.put(TUSEventType.POST_CREATE.getEventType(), PreCreateEvent::new);
+        eventhandlers.put(TUSEventType.POST_RECEIVE.getEventType(), PreCreateEvent::new);
 
         EVENT_HANDLER_SUPPLIER = Collections.unmodifiableMap(eventhandlers);
     }
