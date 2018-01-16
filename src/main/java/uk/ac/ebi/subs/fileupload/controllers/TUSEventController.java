@@ -42,7 +42,7 @@ public class TUSEventController {
         ResponseEntity<Object> response;
 
         EventHandlerSupplier eventHandlerSupplier = new EventHandlerSupplier();
-        TusEvent tusEvent = null;
+        TusEvent tusEvent;
         try {
             tusEvent = eventHandlerSupplier.supplyEventHandler(eventName);
             response = tusEvent.handle(tusFileInfo, eventHandlerService);
