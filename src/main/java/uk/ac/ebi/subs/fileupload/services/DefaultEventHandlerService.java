@@ -42,7 +42,7 @@ public class DefaultEventHandlerService implements EventHandlerService {
 
     @Override
     public ResponseEntity<Object> persistOrUpdateFileInformation(File file) {
-        if (file.getStatus().equals(FileStatus.UPLOADING)) {
+        if (!file.getStatus().equals(FileStatus.INITIALIZED)) {
             File persistedFile = fileRepository.findByFilenameAndSubmissionId(file.getFilename(), file.getSubmissionId());
 
             if (persistedFile == null) {

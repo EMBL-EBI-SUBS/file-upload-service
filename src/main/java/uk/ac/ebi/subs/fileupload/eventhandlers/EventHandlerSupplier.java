@@ -20,6 +20,7 @@ public class EventHandlerSupplier {
         eventhandlers.put(TUSEventType.PRE_CREATE.getEventType(), PreCreateEvent::new);
         eventhandlers.put(TUSEventType.POST_CREATE.getEventType(), PostCreateEvent::new);
         eventhandlers.put(TUSEventType.POST_RECEIVE.getEventType(), PostReceiveEvent::new);
+        eventhandlers.put(TUSEventType.POST_FINISH.getEventType(), PostFinishEvent::new);
 
         EVENT_HANDLER_SUPPLIER = Collections.unmodifiableMap(eventhandlers);
     }

@@ -107,7 +107,7 @@ public class TUSEventTypeControllerTest {
                 .andExpect(status().isNotAcceptable())
                 .andExpect(jsonPath("$.title").value(HttpStatus.NOT_ACCEPTABLE.getReasonPhrase()))
                 .andExpect(jsonPath("$.status").value(HttpStatus.NOT_ACCEPTABLE.value()))
-                .andExpect(jsonPath("$.errors[0]").value("Invalid parameters"));
+                .andExpect(jsonPath("$.errors[0]").value(ErrorMessages.INVALID_PARAMETERS));
     }
 
     @Test
