@@ -65,6 +65,8 @@ public class PostFinishEventTest {
 
     private File fileToPersist;
 
+    PostFinishEvent postFinishEvent = spy(new PostFinishEvent());
+
     @Before
     public void setup() throws  IOException {
         fileRepository.deleteAll();;
@@ -82,11 +84,11 @@ public class PostFinishEventTest {
         createTestResources();
 
         doReturn(TEST_FILE_TO_UPLOAD)
-                .when(eventHandlerService).assembleFullSourcePath(any(String.class), any(String.class));
+                .when(postFinishEvent).assembleFullSourcePath(any(String.class), any(String.class));
         doReturn(TARGET_FOLDER + READY_TO_AGENT_FILE)
-                .when(eventHandlerService).assembleFullTargetPath(any(String.class), any(String.class), any(String.class), any(String.class));
+                .when(postFinishEvent).assembleFullTargetPath(any(String.class), any(String.class), any(String.class), any(String.class));
         doNothing()
-                .when(eventHandlerService).createTargetFolder(any(String.class), any(String.class), any(String.class));
+                .when(postFinishEvent).createTargetFolder(any(String.class), any(String.class), any(String.class));
     }
 
     @After
@@ -101,8 +103,6 @@ public class PostFinishEventTest {
     @Test
     public void whenPostFinishEventTriesToUpdateANonExistingFile_ThenReturnsNotFoundHttpStatus() {
         fileRepository.deleteAll();
-
-        PostFinishEvent postFinishEvent = new PostFinishEvent();
 
         ResponseEntity<Object> response = postFinishEvent.handle(tusFileInfo, eventHandlerService);
 
@@ -119,8 +119,6 @@ public class PostFinishEventTest {
         assertThat(persistedFile.getStatus(), is(equalTo(FileStatus.UPLOADING)));
 
         tusFileInfo.setOffsetValue(TOTAL_SIZE);
-
-        PostFinishEvent postFinishEvent = spy(new PostFinishEvent());
 
         // mock the moveFile method to check the initial status change
         doReturn(new ResponseEntity<>(HttpStatus.OK)).when(postFinishEvent).moveFile(any(File.class), Mockito.eq(eventHandlerService));
@@ -139,11 +137,10 @@ public class PostFinishEventTest {
     @Test
     public void whenSuccessfullyReceivedAFileButFailedWhenMovingIt_thenItShouldRespondWithAcceptedStatus() throws IOException {
         doThrow(IOException.class)
-                .when(eventHandlerService).createTargetFolder(any(String.class), any(String.class), any(String.class));
+                .when(postFinishEvent).createTargetFolder(any(String.class), any(String.class), any(String.class));
 
         tusFileInfo.setOffsetValue(TOTAL_SIZE);
 
-        PostFinishEvent postFinishEvent = new PostFinishEvent();
         ResponseEntity<Object> response = postFinishEvent.handle(tusFileInfo, eventHandlerService);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpStatus.ACCEPTED)));
@@ -154,8 +151,6 @@ public class PostFinishEventTest {
     public void whenSuccessfullyReceivedAFileAndSuccessfullyMovedIt_thenItShouldRespondWithOKStatusAndStatusShouldBeReadyToArchive() {
         tusFileInfo.setOffsetValue(TOTAL_SIZE);
 
-        PostFinishEvent postFinishEvent = new PostFinishEvent();
-
         ResponseEntity<Object> response = postFinishEvent.handle(tusFileInfo, eventHandlerService);
 
         File finishedFile = fileRepository.findByFilenameAndSubmissionId(FILENAME, SUBMISSION_ID);
@@ -165,7 +160,7 @@ public class PostFinishEventTest {
         assertThat(fileRepository.count(), is(1L));
         assertThat(finishedFile.getUploadedSize(), is(equalTo(TOTAL_SIZE)));
         assertTrue(Files.exists(Paths.get(TARGET_FOLDER + READY_TO_AGENT_FILE)));
-        assertThat(finishedFile.getStatus(), is(equalTo(FileStatus.READY_TO_ARCHIVE)));
+        assertThat(finishedFile.getStatus(), is(equalTo(FileStatus.READY_TO_CHECK)));
     }
 
     private void createTestResources() throws IOException {
