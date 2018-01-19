@@ -47,9 +47,17 @@ public class PostFinishEvent implements TusEvent {
     ResponseEntity<Object> moveFile(File file, EventHandlerService eventHandlerService) {
         ResponseEntity<Object> response;
         try {
-            moveFile(file);
-            file.setStatus(FileStatus.READY_TO_CHECK);
-            response =  eventHandlerService.persistOrUpdateFileInformation(file);
+            String sourceFileName = file.getTusId();
+            String fullSourcePath = assembleFullSourcePath(sourceFileName);
+            String targetPath = generateFolderName(sourceFileName);
+            String targetFilename = file.getFilename();
+            String fullTargetPath = assembleFullTargetPath(targetBasePath, targetPath, targetFilename);
+
+            setFilePpropertiesBeforeMoveFile(file, fullSourcePath, fullTargetPath, eventHandlerService);
+
+            moveFile(file, fullSourcePath, fullTargetPath);
+
+            response = setFilePpropertiesAfterMoveFile(file, fullTargetPath, eventHandlerService);
         } catch (IOException e) {
             FileApiError fileApiError = new FileApiError(HttpStatus.ACCEPTED, ErrorMessages.FILE_CREATION_ERROR);
             response = new ResponseEntity<>(fileApiError, HttpStatus.ACCEPTED);
@@ -58,18 +66,22 @@ public class PostFinishEvent implements TusEvent {
         return response;
     }
 
-    void moveFile(File file) throws IOException {
-        String sourceFileName = file.getTusId();
+    private ResponseEntity<Object> setFilePpropertiesBeforeMoveFile(File file, String fullSourcePath, String fullTargetPath, EventHandlerService eventHandlerService) {
+        file.setUploadPath(fullSourcePath);
+        file.setTargetPath(fullTargetPath);
 
-        String targetPath = generateFolderName(file.getTusId());
+        return eventHandlerService.persistOrUpdateFileInformation(file);
+    }
 
-        createTargetFolder(sourcePath, targetBasePath, targetPath);
+    private ResponseEntity<Object> setFilePpropertiesAfterMoveFile(File file, String fullTargetPath, EventHandlerService eventHandlerService) {
+        file.setStatus(FileStatus.READY_TO_CHECK);
+        file.setUploadPath(fullTargetPath);
 
-        String targetFilename = file.getFilename();
+        return eventHandlerService.persistOrUpdateFileInformation(file);
+    }
 
-        String fullTargetPath = assembleFullTargetPath(sourcePath, targetBasePath, targetPath, targetFilename);
-
-        String fullSourcePath = assembleFullSourcePath(sourcePath, sourceFileName);
+    void moveFile(File file, String fullSourcePath, String fullTargetPath) throws IOException {
+        createTargetFolder(fullTargetPath);
 
         Files.move(Paths.get(fullSourcePath), Paths.get(fullTargetPath), StandardCopyOption.ATOMIC_MOVE);
     }
@@ -88,15 +100,15 @@ public class PostFinishEvent implements TusEvent {
         return folderName.toString();
     }
 
-    void createTargetFolder(String sourcePath, String targetBasePath, String targetPath) throws IOException {
-        Files.createDirectories(Paths.get(String.join("/", sourcePath, targetBasePath, targetPath)));
+    void createTargetFolder(String fullTargetPath) throws IOException {
+        Files.createDirectories(Paths.get(fullTargetPath));
     }
 
-    String assembleFullSourcePath(String sourcePath, String sourceFileName) {
+    String assembleFullSourcePath(String sourceFileName) {
         return String.join("/", sourcePath, sourceFileName);
     }
 
-    String assembleFullTargetPath(String sourcePath, String targetBasePath, String targetPath, String targetFilename) {
+    String assembleFullTargetPath(String targetBasePath, String targetPath, String targetFilename) {
         return String.join("/", sourcePath, targetBasePath, targetPath, targetFilename);
     }
 

@@ -20,7 +20,9 @@ public class File {
     @Indexed
     private String filename;
 
-    private String filePath;
+    private String uploadPath;
+
+    private String targetPath;
 
     @Indexed
     private String submissionId;
