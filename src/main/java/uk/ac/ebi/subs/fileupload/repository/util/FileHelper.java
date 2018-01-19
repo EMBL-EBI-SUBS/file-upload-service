@@ -14,7 +14,6 @@ public class FileHelper {
         file.setTusId(tusFileInfo.getTusId());
         file.setSubmissionId(tusFileInfo.getMetadata().getSubmissionID());
         file.setFilename(tusFileInfo.getMetadata().getFilename());
-        file.setFilePath(tusFileInfo.getMetadata().getFilePath());
         file.setTotalSize(tusFileInfo.getSize());
         file.setUploadedSize(tusFileInfo.getOffsetValue());
         file.setUser(tusFileInfo.getMetadata().getJwtToken());

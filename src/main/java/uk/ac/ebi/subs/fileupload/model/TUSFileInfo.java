@@ -56,9 +56,6 @@ public class TUSFileInfo {
         private String filename;
 
         @NotNull
-        private String filePath;
-
-        @NotNull
         private String submissionID;
 
         @NotNull
@@ -71,7 +68,6 @@ public class TUSFileInfo {
         public String toString() {
             return "metadata{" +
                     "filename='" + filename + '\'' +
-                    "filePath='" + filePath + '\'' +
                     ", submissionID='" + submissionID + '\'' +
                     '}';
         }
