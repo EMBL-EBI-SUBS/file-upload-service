@@ -16,9 +16,6 @@ public class FileHelper {
         file.setFilename(tusFileInfo.getMetadata().getFilename());
         file.setTotalSize(tusFileInfo.getSize());
         file.setUploadedSize(tusFileInfo.getOffsetValue());
-        file.setUser(tusFileInfo.getMetadata().getJwtToken());
-
-        // TODO: get the user from the JWT token
 
         return file;
     }

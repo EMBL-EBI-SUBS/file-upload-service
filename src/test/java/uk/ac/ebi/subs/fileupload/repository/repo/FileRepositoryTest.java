@@ -97,7 +97,7 @@ public class FileRepositoryTest {
         createAndPersistFileIntoRepo(FILE_ID_3, TUS_ID_3, FILENAME_2, SUBMISSION_ID_3, USER_2, FileStatus.UPLOADED);
         createAndPersistFileIntoRepo(FILE_ID_4, TUS_ID_4, FILENAME_3, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
 
-        Page<File> persistedFiles = fileRepository.findByUser(USER_1, pageRequest);
+        Page<File> persistedFiles = fileRepository.findByCreatedBy(USER_1, pageRequest);
 
         assertThat(fileRepository.count(), is((long)(files.size())));
         assertThat(persistedFiles.getTotalElements(), is(3L));
@@ -142,7 +142,7 @@ public class FileRepositoryTest {
         file.setTusId(tusId);
         file.setFilename(filename);
         file.setSubmissionId(submissionId);
-        file.setUser(user);
+        file.setCreatedBy(user);
         file.setStatus(status);
 
         fileRepository.insert(file);

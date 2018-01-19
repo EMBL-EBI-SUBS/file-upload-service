@@ -17,6 +17,6 @@ public interface FileRepository extends MongoRepository<File, String> {
     File findByTusId(String tusId);
     Page<File> findBySubmissionId(String submissionId, Pageable pageable);
     File findByFilenameAndSubmissionId(String filename, String submissionId);
-    Page<File> findByUser(String User, Pageable pageable);
+    Page<File> findByCreatedBy(String User, Pageable pageable);
     Page<File> findByStatus(FileStatus status, Pageable pageable);
 }

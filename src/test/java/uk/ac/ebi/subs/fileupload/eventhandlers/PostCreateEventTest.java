@@ -23,9 +23,10 @@ import static org.junit.Assert.assertThat;
 public class PostCreateEventTest {
 
     private TUSFileInfo tusFileInfo;
-    private static final String JWT_TOKEN = "xxxxx.yyyyy.zzzz";
+    private static final String JWT_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1MTYzNjk4NTEsImV4cCI6MTU0NzkwNTg1MSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIm5hbWUiOiJLYXJlbCIsIkVtYWlsIjoia2FyZWxAZXhhbXBsZS5jb20iLCJEb21haW5zIjpbInRlYW1fYSIsInRlYW1fYiJdfQ.uGvNNVZZjb3CNc0zX5zj_QPz2pOAGZ7HQZbFeCU7a7g";
     private static final String SUBMISSION_ID = "submission_1234";
     private static final String FILENAME = "test_file.cram";
+    private static final String UPLOAD_USER = "Karel";
 
     @Autowired
     private EventHandlerService eventHandlerService;
@@ -51,5 +52,6 @@ public class PostCreateEventTest {
 
         assertThat(fileRepository.count(), is(1L));
         assertThat(persistedFile.getFilename(), is(equalTo(FILENAME)));
+        assertThat(persistedFile.getCreatedBy(), is(equalTo(UPLOAD_USER)));
     }
 }

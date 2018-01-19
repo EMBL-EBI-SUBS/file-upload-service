@@ -32,7 +32,7 @@ public class File {
     private long uploadedSize;
 
     @Indexed
-    private String user;
+    private String createdBy;
 
     private FileStatus status;
 }
