@@ -1,0 +1,59 @@
+{
+  "submitter": {
+    "email": "bela@ebi.ac.uk"
+  },
+  "team": {
+    "name": "BelaTeam",
+    "_links": {
+      "submissions": {
+        "href": "https://example.com/api/submissions/search/by-team?teamName=BelaTeam"
+      },
+      "submissions:create": {
+        "href": "https://example.com/api/teams/BelaTeam/submissions"
+      },
+      "items": {
+        "href": "https://example.com/api/teams/BelaTeam/items"
+      }
+    }
+  },
+  "createdDate": "2018-01-22T11:40:38.400+0000",
+  "lastModifiedDate": "2018-01-22T11:40:38.400+0000",
+  "createdBy": "usr-12345678-d7dc-47e8-992f-098765432109",
+  "lastModifiedBy": "usr-12345678-d7dc-47e8-992f-098765432109",
+  "_links": {
+    "self": {
+      "href": "https://example.com/api/submissions/33334444-aaaa-bbbb-cccc-123456789012"
+    },
+    "submission": {
+      "href": "https://example.com/api/submissions/33334444-aaaa-bbbb-cccc-123456789012{?projection}",
+      "templated": true
+    },
+    "team": {
+      "href": "https://example.com/api/teams/BelaTeam"
+    },
+    "contents": {
+      "href": "https://example.com/api/submissions/33334444-aaaa-bbbb-cccc-123456789012/contents"
+    },
+    "validationResults": {
+      "href": "https://example.com/api/validationResults/search/by-submission?submissionId=33334444-aaaa-bbbb-cccc-123456789012"
+    },
+    "self:update": {
+      "href": "https://example.com/api/submissions/33334444-aaaa-bbbb-cccc-123456789012"
+    },
+    "self:delete": {
+      "href": "https://example.com/api/submissions/33334444-aaaa-bbbb-cccc-123456789012"
+    },
+    "processingStatusSummary": {
+      "href": "https://example.com/api/submissions/33334444-aaaa-bbbb-cccc-123456789012/processingStatusSummaryCounts"
+    },
+    "typeProcessingStatusSummary": {
+      "href": "https://example.com/api/submissions/33334444-aaaa-bbbb-cccc-123456789012/processingStatusSummaryTypeCounts"
+    },
+    "processingStatuses": {
+      "href": "https://example.com/api/processingStatuses/search/findBySubmissionId?submissionId=33334444-aaaa-bbbb-cccc-123456789012"
+    },
+    "submissionStatus": {
+      "href": "https://example.com/api/submissions/33334444-aaaa-bbbb-cccc-123456789012/submissionStatus"
+    }
+  }
+}

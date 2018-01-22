@@ -1,8 +1,11 @@
 package uk.ac.ebi.subs.fileupload.repository.util;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 /**
  * This is a helper class to extract values from JWT token's payload.
@@ -25,5 +28,17 @@ public class JWTExtractor {
 
     public String getUsername() {
         return payload.getString(USERNAME_KEY);
+    }
+
+    public List<String> getUserDomains() {
+        List<String> domains = new ArrayList<>();
+        JSONArray domainJsonArray = payload.getJSONArray("Domains");
+        int domainCount = domainJsonArray.length();
+
+        for (int i = 0; i < domainCount; i++) {
+            domains.add(domainJsonArray.getString(i));
+        }
+
+        return domains;
     }
 }
