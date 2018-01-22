@@ -17,6 +17,7 @@ public class JWTExtractor {
     private JSONObject payload;
 
     private static final String USERNAME_KEY = "name";
+    private static final String DOMAINS_KEY = "Domains";
 
     public JWTExtractor(String jwtToken) {
         this.jwtToken = jwtToken;
@@ -32,7 +33,7 @@ public class JWTExtractor {
 
     public List<String> getUserDomains() {
         List<String> domains = new ArrayList<>();
-        JSONArray domainJsonArray = payload.getJSONArray("Domains");
+        JSONArray domainJsonArray = payload.getJSONArray(DOMAINS_KEY);
         int domainCount = domainJsonArray.length();
 
         for (int i = 0; i < domainCount; i++) {
