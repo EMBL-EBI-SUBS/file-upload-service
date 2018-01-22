@@ -15,15 +15,15 @@ public class DefaultValidationService implements ValidationService {
     }
 
     @Override
-    public boolean validateFileUploadRequest(String jwt, String submissionUuid) {
+    public boolean validateFileUploadRequest(String jwtToken, String submissionUuid) {
 
-        boolean isValidToken = tokenHandlerService.validateToken(jwt);
+        boolean isValidToken = tokenHandlerService.validateToken(jwtToken);
 
-        JWTExtractor jwtExtractor = new JWTExtractor(jwt);
+        JWTExtractor jwtExtractor = new JWTExtractor(jwtToken);
 
         boolean isUserAllowedToModifyGivenSubmission =
-                submissionService.isUserAllowedToModifyGivenSubmission(submissionUuid, jwtExtractor.getUserDomains());
-        boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid);
+                submissionService.isUserAllowedToModifyGivenSubmission(submissionUuid, jwtExtractor.getUserDomains(), jwtToken);
+        boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid, jwtToken);
 
         return isValidToken && isUserAllowedToModifyGivenSubmission && isSubmissionModifiable;
     }

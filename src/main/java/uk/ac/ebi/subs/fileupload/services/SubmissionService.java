@@ -10,11 +10,11 @@ import java.util.List;
  */
 public interface SubmissionService {
 
-    String getSubmissionStatus(String submissionId) throws SubmissionNotFoundException;
+    String getSubmissionStatus(String submissionId, String jwtToken) throws SubmissionNotFoundException;
 
-    boolean isModifiable(String submissionId) throws SubmissionNotFoundException;
+    boolean isModifiable(String submissionId, String jwtToken) throws SubmissionNotFoundException;
 
-    String getTeamNameBySubmissionId(String submissionId) throws SubmissionNotFoundException;
+    String getTeamNameBySubmissionId(String submissionId, String jwtToken) throws SubmissionNotFoundException;
 
-    boolean isUserAllowedToModifyGivenSubmission(String submissionId, List<String> teamNames);
+    boolean isUserAllowedToModifyGivenSubmission(String submissionId, List<String> teamNames, String jwtToken);
 }

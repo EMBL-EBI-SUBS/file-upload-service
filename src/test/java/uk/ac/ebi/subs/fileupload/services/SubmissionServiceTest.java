@@ -39,6 +39,8 @@ public class SubmissionServiceTest {
     @Value("${subs-api.submissionURI}")
     private String submissionURI;
 
+    private static final String TEST_JWT_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1MTYzNjk4NTEsImV4cCI6MTU0NzkwNTg1MSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIm5hbWUiOiJLYXJlbCIsIkVtYWlsIjoia2FyZWxAZXhhbXBsZS5jb20iLCJEb21haW5zIjpbInRlYW1fYSIsInRlYW1fYiJdfQ.uGvNNVZZjb3CNc0zX5zj_QPz2pOAGZ7HQZbFeCU7a7g";
+
     @Autowired
     private SubmissionService submissionService;
 
@@ -65,7 +67,7 @@ public class SubmissionServiceTest {
         this.thrown.expect(SubmissionNotFoundException.class);
         this.thrown.expectMessage(String.format(SUBMISSION_NOT_EXISTS_MESSAGE, invalidSubmissionUuid));
 
-        submissionService.getSubmissionStatus(invalidSubmissionUuid);
+        submissionService.getSubmissionStatus(invalidSubmissionUuid, TEST_JWT_TOKEN);
     }
 
     @Test
@@ -82,7 +84,7 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
         );
 
-        String submissionStatus = submissionService.getSubmissionStatus(validDraftSubmissionUuid);
+        String submissionStatus = submissionService.getSubmissionStatus(validDraftSubmissionUuid, TEST_JWT_TOKEN);
 
         assertThat(submissionStatus, is(equalTo("Draft")));
     }
@@ -101,7 +103,7 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
                 );
 
-        String submissionStatus = submissionService.getSubmissionStatus(validSubmittedSubmissionUuid);
+        String submissionStatus = submissionService.getSubmissionStatus(validSubmittedSubmissionUuid, TEST_JWT_TOKEN);
 
         assertThat(submissionStatus, is(equalTo("Submitted")));
     }
@@ -120,7 +122,7 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
                 );
 
-        assertThat(submissionService.isModifiable(submittedSubmissionUuid), is(false));
+        assertThat(submissionService.isModifiable(submittedSubmissionUuid, TEST_JWT_TOKEN), is(false));
     }
 
     @Test
@@ -137,7 +139,7 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
                 );
 
-        assertThat(submissionService.isModifiable(draftSubmissionUuid), is(true));
+        assertThat(submissionService.isModifiable(draftSubmissionUuid, TEST_JWT_TOKEN), is(true));
     }
 
 
@@ -157,7 +159,7 @@ public class SubmissionServiceTest {
         this.thrown.expect(SubmissionNotFoundException.class);
         this.thrown.expectMessage(String.format(SUBMISSION_NOT_EXISTS_MESSAGE, invalidSubmissionUuid));
 
-        submissionService.getTeamNameBySubmissionId(invalidSubmissionUuid);
+        submissionService.getTeamNameBySubmissionId(invalidSubmissionUuid, TEST_JWT_TOKEN);
     }
 
     @Test
@@ -174,7 +176,7 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
                 );
 
-        String teamName = submissionService.getTeamNameBySubmissionId(validDraftSubmissionUuid);
+        String teamName = submissionService.getTeamNameBySubmissionId(validDraftSubmissionUuid, TEST_JWT_TOKEN);
 
         assertThat(teamName, is(equalTo("BelaTeam")));
     }
@@ -194,7 +196,7 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
                 );
 
-        assertThat(submissionService.isUserAllowedToModifyGivenSubmission(validDraftSubmissionUuid, teamsOfUser), is(false));
+        assertThat(submissionService.isUserAllowedToModifyGivenSubmission(validDraftSubmissionUuid, teamsOfUser, TEST_JWT_TOKEN), is(false));
     }
 
     @Test
@@ -212,6 +214,6 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
                 );
 
-        assertThat(submissionService.isUserAllowedToModifyGivenSubmission(validDraftSubmissionUuid, teamsOfUser), is(true));
+        assertThat(submissionService.isUserAllowedToModifyGivenSubmission(validDraftSubmissionUuid, teamsOfUser, TEST_JWT_TOKEN), is(true));
     }
 }
