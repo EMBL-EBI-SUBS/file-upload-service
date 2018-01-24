@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.fileupload.services;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -90,6 +91,8 @@ public class DefaultSubmissionService implements SubmissionService {
     private HttpEntity<?> createRequestEntity(String jwtToken) {
         MultiValueMap<String,String> headers = new LinkedMultiValueMap<>();
         headers.add("Authorization", "Bearer " + jwtToken);
+        headers.add("Content-Type", MediaTypes.HAL_JSON_VALUE);
+        headers.add("Accept", MediaTypes.HAL_JSON_VALUE);
 
         return new HttpEntity<>(headers);
     }
