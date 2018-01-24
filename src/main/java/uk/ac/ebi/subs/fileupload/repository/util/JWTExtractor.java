@@ -17,7 +17,7 @@ public class JWTExtractor {
     private JSONObject payload;
 
     private static final String USERNAME_KEY = "name";
-    private static final String DOMAINS_KEY = "Domains";
+    private static final String DOMAINS_KEY = "domains";
 
     public JWTExtractor(String jwtToken) {
         this.jwtToken = jwtToken;
