@@ -41,10 +41,6 @@ public class FileRepositoryTest {
     private static final String TUS_ID_2 = "TUSID_34";
     private static final String TUS_ID_3 = "TUSID_56";
     private static final String TUS_ID_4 = "TUSID_78";
-    private static final long FILE_ID_1 = 1L;
-    private static final long FILE_ID_2 = 2L;
-    private static final long FILE_ID_3 = 3L;
-    private static final long FILE_ID_4 = 4L;
 
     private PageRequest pageRequest = new PageRequest(0, 10);
 
@@ -62,16 +58,16 @@ public class FileRepositoryTest {
 
     @Test
     public void testFindFileByTusId() {
-        createAndPersistFileIntoRepo(FILE_ID_1, TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.INITIALIZED);
+        createAndPersistFileIntoRepo(TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.INITIALIZED);
 
-        File persistedFile = fileRepository.findByTusId(TUS_ID_1);
+        File persistedFile = fileRepository.findByGeneratedTusId(TUS_ID_1);
 
         assertEquals(persistedFile, files.get(0));
     }
 
     @Test
     public void testFindFileBySubmissionId() {
-        createAndPersistFileIntoRepo(FILE_ID_1, TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADING);
+        createAndPersistFileIntoRepo(TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADING);
 
         Page<File> persistedFiles = fileRepository.findBySubmissionId(SUBMISSION_ID_1, pageRequest);
 
@@ -80,9 +76,9 @@ public class FileRepositoryTest {
 
     @Test
     public void testFindFileByFilenameAndSubmissionId() {
-        createAndPersistFileIntoRepo(FILE_ID_1, TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
-        createAndPersistFileIntoRepo(FILE_ID_2, TUS_ID_2, FILENAME_1, SUBMISSION_ID_2, USER_1, FileStatus.UPLOADED);
-        createAndPersistFileIntoRepo(FILE_ID_3, TUS_ID_3, FILENAME_2, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADING);
+        createAndPersistFileIntoRepo(TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
+        createAndPersistFileIntoRepo(TUS_ID_2, FILENAME_1, SUBMISSION_ID_2, USER_1, FileStatus.UPLOADED);
+        createAndPersistFileIntoRepo(TUS_ID_3, FILENAME_2, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADING);
 
         File persistedFile = fileRepository.findByFilenameAndSubmissionId(FILENAME_1, SUBMISSION_ID_1);
 
@@ -92,10 +88,10 @@ public class FileRepositoryTest {
 
     @Test
     public void testFindFileByUser() {
-        createAndPersistFileIntoRepo(FILE_ID_1, TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
-        createAndPersistFileIntoRepo(FILE_ID_2, TUS_ID_2, FILENAME_1, SUBMISSION_ID_2, USER_1, FileStatus.UPLOADED);
-        createAndPersistFileIntoRepo(FILE_ID_3, TUS_ID_3, FILENAME_2, SUBMISSION_ID_3, USER_2, FileStatus.UPLOADED);
-        createAndPersistFileIntoRepo(FILE_ID_4, TUS_ID_4, FILENAME_3, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
+        createAndPersistFileIntoRepo(TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
+        createAndPersistFileIntoRepo(TUS_ID_2, FILENAME_1, SUBMISSION_ID_2, USER_1, FileStatus.UPLOADED);
+        createAndPersistFileIntoRepo(TUS_ID_3, FILENAME_2, SUBMISSION_ID_3, USER_2, FileStatus.UPLOADED);
+        createAndPersistFileIntoRepo(TUS_ID_4, FILENAME_3, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
 
         Page<File> persistedFiles = fileRepository.findByCreatedBy(USER_1, pageRequest);
 
@@ -108,10 +104,10 @@ public class FileRepositoryTest {
 
     @Test
     public void testFindFileByStatus() {
-        createAndPersistFileIntoRepo(FILE_ID_1, TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
-        createAndPersistFileIntoRepo(FILE_ID_2, TUS_ID_2, FILENAME_1, SUBMISSION_ID_2, USER_1, FileStatus.INITIALIZED);
-        createAndPersistFileIntoRepo(FILE_ID_4, TUS_ID_4, FILENAME_3, SUBMISSION_ID_3, USER_2, FileStatus.UPLOADING);
-        createAndPersistFileIntoRepo(FILE_ID_3, TUS_ID_3, FILENAME_2, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
+        createAndPersistFileIntoRepo(TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
+        createAndPersistFileIntoRepo(TUS_ID_2, FILENAME_1, SUBMISSION_ID_2, USER_1, FileStatus.INITIALIZED);
+        createAndPersistFileIntoRepo(TUS_ID_4, FILENAME_3, SUBMISSION_ID_3, USER_2, FileStatus.UPLOADING);
+        createAndPersistFileIntoRepo(TUS_ID_3, FILENAME_2, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
 
         Page<File> initializedFiles = fileRepository.findByStatus(FileStatus.INITIALIZED, pageRequest);
         Page<File> uploadingFiles = fileRepository.findByStatus(FileStatus.UPLOADING, pageRequest);
@@ -134,12 +130,11 @@ public class FileRepositoryTest {
     }
 
     private void createAndPersistFileIntoRepo(
-            long fileId, String tusId, String filename, String submissionId, String user, FileStatus status) {
+            String tusId, String filename, String submissionId, String user, FileStatus status) {
         File file = new File();
-        file.setId(fileId);
         file.setTotalSize(TOTAL_SIZE);
         file.setUploadedSize(UPLOADED_SIZE);
-        file.setTusId(tusId);
+        file.setGeneratedTusId(tusId);
         file.setFilename(filename);
         file.setSubmissionId(submissionId);
         file.setCreatedBy(user);

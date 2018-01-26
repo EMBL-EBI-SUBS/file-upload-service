@@ -86,9 +86,9 @@ public class PostFinishEventTest {
         doReturn(TEST_FILE_TO_UPLOAD)
                 .when(postFinishEvent).assembleFullSourcePath(any(String.class));
         doReturn(TARGET_FOLDER + READY_TO_AGENT_FILE)
-                .when(postFinishEvent).assembleFullTargetPath(any(String.class), any(String.class), any(String.class));
+                .when(postFinishEvent).assembleFullTargetPath(any(String.class), any(String.class));
         doNothing()
-                .when(postFinishEvent).createTargetFolder(any(String.class));
+                .when(postFinishEvent).moveFile(any(String.class), any(String.class), any(String.class));
     }
 
     @After
@@ -137,7 +137,7 @@ public class PostFinishEventTest {
     @Test
     public void whenSuccessfullyReceivedAFileButFailedWhenMovingIt_thenItShouldRespondWithAcceptedStatus() throws IOException {
         doThrow(IOException.class)
-                .when(postFinishEvent).createTargetFolder(any(String.class));
+                .when(postFinishEvent).moveFile(any(String.class), any(String.class), any(String.class));
 
         tusFileInfo.setOffsetValue(TOTAL_SIZE);
 
@@ -164,8 +164,7 @@ public class PostFinishEventTest {
 
         assertThat(fileRepository.count(), is(1L));
         assertThat(finishedFile.getUploadedSize(), is(equalTo(TOTAL_SIZE)));
-        assertTrue(Files.exists(Paths.get(TARGET_FOLDER + READY_TO_AGENT_FILE)));
-        assertThat(finishedFile.getStatus(), is(equalTo(FileStatus.READY_TO_CHECK)));
+        assertThat(finishedFile.getStatus(), is(equalTo(FileStatus.READY_FOR_CHECKSUM)));
 
         assertThat(finishedFile.getUploadPath(), is(TARGET_FOLDER + READY_TO_AGENT_FILE));
         assertThat(finishedFile.getTargetPath(), is(TARGET_FOLDER + READY_TO_AGENT_FILE));

@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.fileupload.eventhandlers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
@@ -14,6 +16,8 @@ import uk.ac.ebi.subs.fileupload.util.FileStatus;
  */
 public class PostCreateEvent implements TusEvent {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostCreateEvent.class);
+
     @Override
     public ResponseEntity<Object> handle(TUSFileInfo tusFileInfo, EventHandlerService eventHandlerService) {
         File file = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
@@ -22,6 +26,8 @@ public class PostCreateEvent implements TusEvent {
         JWTExtractor jwtExtractor = new JWTExtractor(tusFileInfo.getMetadata().getJwtToken());
 
         file.setCreatedBy(jwtExtractor.getUsername());
+
+        LOGGER.debug(String.format("File object: %s", file));
 
         return eventHandlerService.persistOrUpdateFileInformation(file);
     }

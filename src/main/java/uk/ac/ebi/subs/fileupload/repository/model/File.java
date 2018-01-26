@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.fileupload.repository.model;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import uk.ac.ebi.subs.fileupload.util.FileStatus;
@@ -12,10 +13,11 @@ import uk.ac.ebi.subs.fileupload.util.FileStatus;
 @Data
 public class File {
 
-    private long id;
+    @Id
+    private String id;
 
     @Indexed
-    private String tusId;
+    private String generatedTusId;
 
     @Indexed
     private String filename;
