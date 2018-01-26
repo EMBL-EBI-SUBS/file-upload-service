@@ -16,22 +16,29 @@ public class JWTExtractor {
 
     private JSONObject payload;
 
-    private static final String USERNAME_KEY = "name";
-    private static final String DOMAINS_KEY = "domains";
+    public static final String USERNAME_KEY = "name";
+    public static final String DOMAINS_KEY = "domains";
 
     public JWTExtractor(String jwtToken) {
         this.jwtToken = jwtToken;
+    }
 
-        String payloadBase64 = jwtToken.split("\\.")[1];
-
-        payload = new JSONObject(new String(Base64.getDecoder().decode(payloadBase64)));
+    public JSONObject decodePayload(String payloadBase64) {
+        return new JSONObject(new String(Base64.getDecoder().decode(payloadBase64)));
     }
 
     public String getUsername() {
+        if (payload == null) {
+            initPayload();
+        }
         return payload.getString(USERNAME_KEY);
     }
 
     public List<String> getUserDomains() {
+        if (payload == null) {
+            initPayload();
+        }
+
         List<String> domains = new ArrayList<>();
         JSONArray domainJsonArray = payload.getJSONArray(DOMAINS_KEY);
         int domainCount = domainJsonArray.length();
@@ -41,5 +48,10 @@ public class JWTExtractor {
         }
 
         return domains;
+    }
+
+    private void initPayload() {
+        String payloadBase64 = jwtToken.split("\\.")[1];
+        payload = decodePayload(payloadBase64);
     }
 }

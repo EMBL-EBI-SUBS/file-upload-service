@@ -18,12 +18,16 @@ public class PostCreateEvent implements TusEvent {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostCreateEvent.class);
 
+    public JWTExtractor setupJWTExtractor(String jwtToken) {
+         return new JWTExtractor(jwtToken);
+    }
+
     @Override
     public ResponseEntity<Object> handle(TUSFileInfo tusFileInfo, EventHandlerService eventHandlerService) {
         File file = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
         file.setStatus(FileStatus.INITIALIZED);
 
-        JWTExtractor jwtExtractor = new JWTExtractor(tusFileInfo.getMetadata().getJwtToken());
+        JWTExtractor jwtExtractor = setupJWTExtractor(tusFileInfo.getMetadata().getJwtToken());
 
         file.setCreatedBy(jwtExtractor.getUsername());
 
