@@ -87,22 +87,6 @@ public class FileRepositoryTest {
     }
 
     @Test
-    public void testFindFileByUser() {
-        createAndPersistFileIntoRepo(TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
-        createAndPersistFileIntoRepo(TUS_ID_2, FILENAME_1, SUBMISSION_ID_2, USER_1, FileStatus.UPLOADED);
-        createAndPersistFileIntoRepo(TUS_ID_3, FILENAME_2, SUBMISSION_ID_3, USER_2, FileStatus.UPLOADED);
-        createAndPersistFileIntoRepo(TUS_ID_4, FILENAME_3, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
-
-        Page<File> persistedFiles = fileRepository.findByCreatedBy(USER_1, pageRequest);
-
-        assertThat(fileRepository.count(), is((long)(files.size())));
-        assertThat(persistedFiles.getTotalElements(), is(3L));
-        assertEquals(persistedFiles.getContent().get(0), files.get(0));
-        assertEquals(persistedFiles.getContent().get(1), files.get(1));
-        assertEquals(persistedFiles.getContent().get(2), files.get(3));
-    }
-
-    @Test
     public void testFindFileByStatus() {
         createAndPersistFileIntoRepo(TUS_ID_1, FILENAME_1, SUBMISSION_ID_1, USER_1, FileStatus.UPLOADED);
         createAndPersistFileIntoRepo(TUS_ID_2, FILENAME_1, SUBMISSION_ID_2, USER_1, FileStatus.INITIALIZED);
