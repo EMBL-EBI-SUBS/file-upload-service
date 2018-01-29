@@ -14,6 +14,7 @@ import uk.ac.ebi.subs.fileupload.util.FileStatus;
 import uk.ac.ebi.subs.fileupload.util.PropertiesLoader;
 
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -31,6 +32,8 @@ public class PostFinishEvent implements TusEvent {
     private static final String SOURCE_BASE_PATH_PROPERTIES_KEY = "sourceBasePath";
     private static final String TARGET_BASE_PATH_PROPERTIES_KEY = "targetBasePath";
     private static final String BIN_FILE_EXTENSION_BY_TUS = ".bin";
+
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     private String sourcePath;
     private String targetBasePath;
@@ -66,7 +69,7 @@ public class PostFinishEvent implements TusEvent {
         try {
             String sourceFileName = file.getGeneratedTusId() + BIN_FILE_EXTENSION_BY_TUS;
             String fullSourcePath = assembleFullSourcePath(sourceFileName);
-            String targetPath = generateFolderName(sourceFileName);
+            String targetPath = generateFolderName(file.getSubmissionId());
             String targetFilename = file.getFilename();
             String fullTargetPath = assembleFullTargetPath(targetBasePath, targetPath);
 
@@ -84,42 +87,39 @@ public class PostFinishEvent implements TusEvent {
     }
 
     String assembleFullSourcePath(String sourceFileName) {
-        return String.join("/", sourcePath, sourceFileName);
+        return String.join(FILE_SEPARATOR, sourcePath, sourceFileName);
     }
 
     String assembleFullTargetPath(String targetBasePath, String targetPath) {
-        return String.join("/", sourcePath, targetBasePath, targetPath);
+        return String.join(FILE_SEPARATOR, sourcePath, targetBasePath, targetPath);
     }
 
     private ResponseEntity<Object> setFilePpropertiesBeforeMoveFile(File file, String fullSourcePath, String fullTargetPath, EventHandlerService eventHandlerService) {
         file.setUploadPath(fullSourcePath);
-        file.setTargetPath(fullTargetPath);
+        file.setTargetPath(String.join(FILE_SEPARATOR, fullTargetPath, file.getFilename()));
 
         return eventHandlerService.persistOrUpdateFileInformation(file);
     }
 
     private ResponseEntity<Object> setFilePpropertiesAfterMoveFile(File file, String fullTargetPath, EventHandlerService eventHandlerService) {
         file.setStatus(FileStatus.READY_FOR_CHECKSUM);
-        file.setUploadPath(fullTargetPath);
+        file.setUploadPath(String.join(FILE_SEPARATOR, fullTargetPath, file.getFilename()));
 
         return eventHandlerService.persistOrUpdateFileInformation(file);
     }
 
     void moveFile(String filename, String fullSourcePath, String fullTargetPath) throws IOException {
         Files.createDirectories(Paths.get(fullTargetPath));
-        Files.move(Paths.get(fullSourcePath), Paths.get(fullTargetPath + "/" + filename), StandardCopyOption.ATOMIC_MOVE);
+        Files.move(Paths.get(fullSourcePath), Paths.get(fullTargetPath + FILE_SEPARATOR + filename), StandardCopyOption.ATOMIC_MOVE);
     }
 
-    private String generateFolderName(String tusId) {
+    private String generateFolderName(String submissionUUID) {
         StringBuilder folderName = new StringBuilder();
-        int startIndex = 0;
-        for (int i = 0; i < 2; i++) {
-            if (folderName.length() > 0) {
-                folderName.append("/");
-            }
-            folderName.append(tusId.substring(startIndex, startIndex + DIR_NAME_SIZE));
-            startIndex = DIR_NAME_SIZE;
-        }
+        folderName.append(submissionUUID.substring(0, 1));
+        folderName.append(FILE_SEPARATOR);
+        folderName.append(submissionUUID.substring(1, 2));
+        folderName.append(FILE_SEPARATOR);
+        folderName.append(submissionUUID);
 
         return folderName.toString();
     }
