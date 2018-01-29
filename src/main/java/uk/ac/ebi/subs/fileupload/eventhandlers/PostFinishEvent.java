@@ -14,7 +14,6 @@ import uk.ac.ebi.subs.fileupload.util.FileStatus;
 import uk.ac.ebi.subs.fileupload.util.PropertiesLoader;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -76,6 +75,7 @@ public class PostFinishEvent implements TusEvent {
             setFilePpropertiesBeforeMoveFile(file, fullSourcePath, fullTargetPath, eventHandlerService);
 
             moveFile(targetFilename, fullSourcePath, fullTargetPath);
+            deleteInfoFile(fullSourcePath);
 
             response = setFilePpropertiesAfterMoveFile(file, fullTargetPath, eventHandlerService);
         } catch (IOException e) {
@@ -111,6 +111,10 @@ public class PostFinishEvent implements TusEvent {
     void moveFile(String filename, String fullSourcePath, String fullTargetPath) throws IOException {
         Files.createDirectories(Paths.get(fullTargetPath));
         Files.move(Paths.get(fullSourcePath), Paths.get(fullTargetPath + FILE_SEPARATOR + filename), StandardCopyOption.ATOMIC_MOVE);
+    }
+
+    void deleteInfoFile(String fullSourcePath) throws IOException {
+        Files.deleteIfExists(Paths.get(fullSourcePath.substring(0, fullSourcePath.length() - 3) + "info"));
     }
 
     private String generateFolderName(String submissionUUID) {
