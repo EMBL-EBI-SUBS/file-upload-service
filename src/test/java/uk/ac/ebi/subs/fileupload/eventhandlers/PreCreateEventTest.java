@@ -3,15 +3,15 @@ package uk.ac.ebi.subs.fileupload.eventhandlers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
+import uk.ac.ebi.subs.fileupload.errors.FileApiError;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
-import uk.ac.ebi.subs.fileupload.services.ValidationService;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -29,10 +29,10 @@ public class PreCreateEventTest {
     private static final String FILENAME = "test_file.cram";
 
     @MockBean
-    private ValidationService validationService;
-
-    @Autowired
     private EventHandlerService eventHandlerService;
+
+    private ResponseEntity<Object> mockedResponseOK = new ResponseEntity<>(HttpStatus.OK);
+    private ResponseEntity<Object> mockedResponseNotAcceptable = new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
     @Before
     public void setup() {
@@ -41,7 +41,7 @@ public class PreCreateEventTest {
 
     @Test
     public void whenRequestIsInvalid_ShouldReturnHTTPStatusNotAcceptable() {
-        given(this.validationService.validateFileUploadRequest(JWT_TOKEN, SUBMISSION_UUID)).willReturn(false);
+        given(this.eventHandlerService.validateUploadRequest(tusFileInfo)).willReturn(mockedResponseNotAcceptable);
 
         PreCreateEvent preCreateEvent = new PreCreateEvent();
 
@@ -51,13 +51,29 @@ public class PreCreateEventTest {
     }
 
     @Test
-    public void whenRequestIsValid_ShouldReturnHTTPStatusOK() {
-        given(this.validationService.validateFileUploadRequest(JWT_TOKEN, SUBMISSION_UUID)).willReturn(true);
+    public void whenRequestIsValidAndFileIsNotDuplicated_ShouldReturnHTTPStatusOK() {
+        given(this.eventHandlerService.validateUploadRequest(tusFileInfo)).willReturn(mockedResponseOK);
 
         PreCreateEvent preCreateEvent = new PreCreateEvent();
 
         ResponseEntity<Object> response = preCreateEvent.handle(tusFileInfo, eventHandlerService);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpStatus.OK)));
+    }
+
+    @Test
+    public void whenRequestIsValidAndFileIsDuplicated_ShouldReturnHTTPStatusConflictAndDuplicatedFileMessage() {
+        given(this.eventHandlerService.validateUploadRequest(tusFileInfo)).willReturn(mockedResponseOK);
+        given(this.eventHandlerService.isFileDuplicated(FILENAME, SUBMISSION_UUID)).willReturn(true);
+
+        PreCreateEvent preCreateEvent = new PreCreateEvent();
+
+        ResponseEntity<Object> response = preCreateEvent.handle(tusFileInfo, eventHandlerService);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpStatus.CONFLICT)));
+
+        FileApiError fileApiError = (FileApiError)response.getBody();
+        assertThat(fileApiError.getErrors().get(0),
+                is(equalTo(String.format(ErrorMessages.DUPLICATED_FILE_ERROR, FILENAME, SUBMISSION_UUID))));
     }
 }
