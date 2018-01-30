@@ -36,7 +36,7 @@ public class DefaultEventHandlerService implements EventHandlerService {
         } else {
             // make it an error object
             FileApiError fileApiError = new FileApiError(HttpStatus.CONFLICT, ErrorMessages.INVALID_PARAMETERS);
-            response = new ResponseEntity<>(fileApiError, HttpStatus.NOT_ACCEPTABLE);
+            response = new ResponseEntity<>(fileApiError, HttpStatus.CONFLICT);
         }
 
         return response;

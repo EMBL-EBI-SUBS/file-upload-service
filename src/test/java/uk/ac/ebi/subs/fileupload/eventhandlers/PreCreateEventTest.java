@@ -32,7 +32,7 @@ public class PreCreateEventTest {
     private EventHandlerService eventHandlerService;
 
     private ResponseEntity<Object> mockedResponseOK = new ResponseEntity<>(HttpStatus.OK);
-    private ResponseEntity<Object> mockedResponseNotAcceptable = new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+    private ResponseEntity<Object> mockedResponseNotAcceptable = new ResponseEntity<>(HttpStatus.CONFLICT);
 
     @Before
     public void setup() {
@@ -47,7 +47,7 @@ public class PreCreateEventTest {
 
         ResponseEntity<Object> response = preCreateEvent.handle(tusFileInfo, eventHandlerService);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpStatus.NOT_ACCEPTABLE)));
+        assertThat(response.getStatusCode(), is(equalTo(HttpStatus.CONFLICT)));
     }
 
     @Test
