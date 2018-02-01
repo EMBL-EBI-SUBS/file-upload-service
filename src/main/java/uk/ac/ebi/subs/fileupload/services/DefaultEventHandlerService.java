@@ -55,10 +55,12 @@ public class DefaultEventHandlerService implements EventHandlerService {
         File fileToPersist = file;
 
         if (!file.getStatus().equals(FileStatus.INITIALIZED)) {
-            File persistedFile = fileRepository.findByGeneratedTusId(file.getGeneratedTusId());
+            String tusId = file.getGeneratedTusId();
+            File persistedFile = fileRepository.findByGeneratedTusId(tusId);
 
             if (persistedFile == null) {
-                FileApiError fileApiError = new FileApiError(HttpStatus.NOT_FOUND, ErrorMessages.FILE_DOCUMENT_NOT_FOUND);
+                FileApiError fileApiError = new FileApiError(HttpStatus.NOT_FOUND,
+                        String.format(ErrorMessages.FILE_DOCUMENT_NOT_FOUND, tusId));
                 return new ResponseEntity<>(fileApiError, HttpStatus.NOT_FOUND);
             }
             fileToPersist = updateFileProperties(file, persistedFile);
