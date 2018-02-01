@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
-import uk.ac.ebi.subs.fileupload.errors.FileApiError;
+import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
 import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
@@ -35,8 +35,7 @@ public class DefaultEventHandlerService implements EventHandlerService {
             response = new ResponseEntity<>(HttpStatus.OK);
         } else {
             // make it an error object
-            FileApiError fileApiError = new FileApiError(HttpStatus.CONFLICT, ErrorMessages.INVALID_PARAMETERS);
-            response = new ResponseEntity<>(fileApiError, HttpStatus.CONFLICT);
+            response = ErrorResponse.assemble(HttpStatus.CONFLICT, ErrorMessages.INVALID_PARAMETERS);
         }
 
         return response;
@@ -59,9 +58,7 @@ public class DefaultEventHandlerService implements EventHandlerService {
             File persistedFile = fileRepository.findByGeneratedTusId(tusId);
 
             if (persistedFile == null) {
-                FileApiError fileApiError = new FileApiError(HttpStatus.NOT_FOUND,
-                        String.format(ErrorMessages.FILE_DOCUMENT_NOT_FOUND, tusId));
-                return new ResponseEntity<>(fileApiError, HttpStatus.NOT_FOUND);
+                return ErrorResponse.assemble(HttpStatus.NOT_FOUND, String.format(ErrorMessages.FILE_DOCUMENT_NOT_FOUND, tusId));
             }
             fileToPersist = updateFileProperties(file, persistedFile);
         }

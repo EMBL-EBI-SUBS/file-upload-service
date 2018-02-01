@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
-import uk.ac.ebi.subs.fileupload.errors.FileApiError;
+import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
 import uk.ac.ebi.subs.fileupload.repository.util.FileHelper;
@@ -79,8 +79,7 @@ public class PostFinishEvent implements TusEvent {
 
             response = setFilePpropertiesAfterMoveFile(file, fullTargetPath, eventHandlerService);
         } catch (IOException e) {
-            FileApiError fileApiError = new FileApiError(HttpStatus.ACCEPTED, ErrorMessages.FILE_CREATION_ERROR);
-            response = new ResponseEntity<>(fileApiError, HttpStatus.ACCEPTED);
+            response = ErrorResponse.assemble(HttpStatus.ACCEPTED, ErrorMessages.FILE_CREATION_ERROR);
         }
 
         return response;

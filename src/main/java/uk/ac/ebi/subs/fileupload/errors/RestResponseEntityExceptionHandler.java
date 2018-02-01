@@ -20,24 +20,18 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     private static final Logger LOGGER = LoggerFactory.getLogger(RestResponseEntityExceptionHandler.class);
 
     @ExceptionHandler(value = InvalidTokenException.class)
-    protected ResponseEntity<Object> handleInvalidToken(RuntimeException ex, WebRequest request) {
-        String bodyOfResponse = ex.getMessage();
-        LOGGER.info("InvalidTokenException occurred:: " + bodyOfResponse);
-        return handleExceptionInternal(ex, bodyOfResponse,
-                getContentTypeHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, request);
+    protected ResponseEntity<Object> handleInvalidToken(RuntimeException ex) {
+        String exceptionMessage = ex.getMessage();
+        ResponseEntity<Object> errorResponse = ErrorResponse.assemble(HttpStatus.NOT_FOUND, exceptionMessage);
+        LOGGER.info("InvalidTokenException occurred:: " + exceptionMessage);
+        return errorResponse;
     }
 
     @ExceptionHandler(value = SubmissionNotFoundException.class)
-    protected ResponseEntity<Object> handleSubmissionNotFound(RuntimeException ex, WebRequest request) {
-        String bodyOfResponse = ex.getMessage();
-        LOGGER.info("SubmissionNotFoundException occurred:: " + bodyOfResponse);
-        return handleExceptionInternal(ex, bodyOfResponse,
-                getContentTypeHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    private HttpHeaders getContentTypeHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaTypes.HAL_JSON);
-        return headers;
+    protected ResponseEntity<Object> handleSubmissionNotFound(RuntimeException ex) {
+        String exceptionMessage = ex.getMessage();
+        ResponseEntity<Object> errorResponse = ErrorResponse.assemble(HttpStatus.NOT_FOUND, exceptionMessage);
+        LOGGER.info("SubmissionNotFoundException occurred:: " + exceptionMessage);
+        return errorResponse;
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
-import uk.ac.ebi.subs.fileupload.errors.FileApiError;
+import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
 import uk.ac.ebi.subs.fileupload.services.FileService;
 import uk.ac.ebi.subs.fileupload.services.SubmissionService;
@@ -46,9 +46,8 @@ public class FileController {
         File fileToDelete = fileService.getFileByTusId(tusId);
 
         if (fileToDelete == null) {
-            FileApiError fileApiError = new FileApiError(HttpStatus.NOT_FOUND,
+            return ErrorResponse.assemble(HttpStatus.NOT_FOUND,
                     String.format(ErrorMessages.FILE_DOCUMENT_NOT_FOUND, tusId));
-            return new ResponseEntity<>(fileApiError, HttpStatus.NOT_FOUND);
         }
 
         String submissionId = fileToDelete.getSubmissionId();
@@ -57,14 +56,12 @@ public class FileController {
         try {
             submissionModifiable = submissionService.isModifiable(submissionId, authToken.substring(JWT_TOKEN_PREFIX.length()));
         } catch (HttpClientErrorException httpClientException) {
-            FileApiError fileApiError = new FileApiError(HttpStatus.UNAUTHORIZED, ErrorMessages.UNAUTHORIZED_REQUEST);
-            return new ResponseEntity<>(fileApiError, HttpStatus.UNAUTHORIZED);
+            return ErrorResponse.assemble(HttpStatus.UNAUTHORIZED, ErrorMessages.UNAUTHORIZED_REQUEST);
         }
 
         if (!submissionModifiable) {
-            FileApiError fileApiError = new FileApiError(HttpStatus.CONFLICT,
+            return ErrorResponse.assemble(HttpStatus.CONFLICT,
                     String.format(ErrorMessages.SUBMISSION_NOT_MODIFIABLE, submissionId));
-            return new ResponseEntity<>(fileApiError, HttpStatus.CONFLICT);
         }
 
         fileToDelete = fileService.markFileForDeletion(fileToDelete);
