@@ -25,19 +25,29 @@ public class DefaultEventHandlerService implements EventHandlerService {
     public ResponseEntity<Object> validateUploadRequest(TUSFileInfo tusFileInfo) {
         ResponseEntity<Object> response;
 
-        String jwtToken = tusFileInfo.getMetadata().getJwtToken();
-        String submissionId = tusFileInfo.getMetadata().getSubmissionID();
+        TUSFileInfo.MetaData fileMetadata = tusFileInfo.getMetadata();
+
+        String jwtToken = fileMetadata.getJwtToken();
+        String submissionId = fileMetadata.getSubmissionID();
 
         boolean isValidRequest = validationService.validateFileUploadRequest(jwtToken, submissionId);
         if (isValidRequest) {
             response = new ResponseEntity<>(HttpStatus.OK);
         } else {
             // make it an error object
-            FileApiError fileApiError = new FileApiError(HttpStatus.NOT_ACCEPTABLE, ErrorMessages.INVALID_PARAMETERS);
-            response = new ResponseEntity<>(fileApiError, HttpStatus.NOT_ACCEPTABLE);
+            FileApiError fileApiError = new FileApiError(HttpStatus.CONFLICT, ErrorMessages.INVALID_PARAMETERS);
+            response = new ResponseEntity<>(fileApiError, HttpStatus.CONFLICT);
         }
 
         return response;
+    }
+
+    @Override
+    public boolean isFileDuplicated(String fileName, String submissionUUID) {
+
+        File existedFile = fileRepository.findByFilenameAndSubmissionId(fileName, submissionUUID);
+
+        return existedFile != null;
     }
 
     @Override

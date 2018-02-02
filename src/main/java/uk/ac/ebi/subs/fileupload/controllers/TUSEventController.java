@@ -47,8 +47,8 @@ public class TUSEventController {
             tusEvent = eventHandlerSupplier.supplyEventHandler(eventName);
             response = tusEvent.handle(tusFileInfo, eventHandlerService);
         } catch (IllegalArgumentException ex) {
-            FileApiError fileApiError = new FileApiError(HttpStatus.NOT_ACCEPTABLE, ErrorMessages.NOT_SUPPORTED_EVENT);
-            response = new ResponseEntity<>(fileApiError, HttpStatus.NOT_ACCEPTABLE);
+            FileApiError fileApiError = new FileApiError(HttpStatus.CONFLICT, ErrorMessages.NOT_SUPPORTED_EVENT);
+            response = new ResponseEntity<>(fileApiError, HttpStatus.CONFLICT);
         }
 
         return response;
