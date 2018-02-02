@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.fileupload.services;
 
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.subs.fileupload.repository.util.JWTExtractor;
 
 @Service
 public class DefaultValidationService implements ValidationService {
@@ -14,15 +15,16 @@ public class DefaultValidationService implements ValidationService {
     }
 
     @Override
-    public boolean validateFileUploadRequest(String jwt, String submissionUuid) {
+    public boolean validateFileUploadRequest(String jwtToken, String submissionUuid) {
 
-        boolean isValidToken = tokenHandlerService.validateToken(jwt);
-        boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid);
+        boolean isValidToken = tokenHandlerService.validateToken(jwtToken);
 
-        // TODO: add validation whether the user who is uploading the file has permission to modify the submission
+        JWTExtractor jwtExtractor = new JWTExtractor(jwtToken);
 
-        return isValidToken && isSubmissionModifiable;
+        boolean isUserAllowedToModifyGivenSubmission =
+                submissionService.isUserAllowedToModifyGivenSubmission(submissionUuid, jwtExtractor.getUserDomains(), jwtToken);
+        boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid, jwtToken);
+
+        return isValidToken && isUserAllowedToModifyGivenSubmission && isSubmissionModifiable;
     }
-
-
 }

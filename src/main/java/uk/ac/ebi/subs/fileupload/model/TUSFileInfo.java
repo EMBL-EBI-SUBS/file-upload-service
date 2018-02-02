@@ -40,9 +40,6 @@ public class TUSFileInfo {
     @JsonProperty(value = "PartialUploads")
     private String[] partialUploads;
 
-    @JsonIgnore
-    private String eventType;
-
     public TUSFileInfo() {
     }
 
@@ -85,7 +82,8 @@ public class TUSFileInfo {
     @Override
     public String toString() {
         return "TUSFileInfo{" +
-                "tusId='" + tusId + '\'' +
+                "id=" + id +
+                ", tusId='" + tusId + '\'' +
                 ", size=" + size +
                 ", offsetValue=" + offsetValue +
                 ", metadata=" + metadata +

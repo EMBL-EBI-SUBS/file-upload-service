@@ -14,9 +14,8 @@ import uk.ac.ebi.subs.fileupload.util.FileStatus;
 @Repository
 public interface FileRepository extends MongoRepository<File, String> {
 
-    File findByTusId(String tusId);
+    File findByGeneratedTusId(String generatedTusId);
     Page<File> findBySubmissionId(String submissionId, Pageable pageable);
     File findByFilenameAndSubmissionId(String filename, String submissionId);
-    Page<File> findByUser(String User, Pageable pageable);
     Page<File> findByStatus(FileStatus status, Pageable pageable);
 }

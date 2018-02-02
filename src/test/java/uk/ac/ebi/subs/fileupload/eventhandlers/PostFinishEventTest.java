@@ -42,17 +42,20 @@ import static org.mockito.Mockito.spy;
 public class PostFinishEventTest {
 
     private TUSFileInfo tusFileInfo;
-    private static final String JWT_TOKEN = "xxxxx.yyyyy.zzzz";
+    private static final String JWT_TOKEN = "some.jwt.token";
     private static final String SUBMISSION_ID = "submission_1234";
     private static final String FILENAME = "test_file.cram";
-    private static final String TUS_ID = "abcd1234efgh5678.bin";
+    private static final String TUS_ID = "abcdefgh12345678";
+
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     private static final String TARGET_FOLDER_BASE = "src/test/resources/ready_to_agent";
-    private static final String FOLDER1 = "/ab12";
-    private static final String FOLDER2 = "/cd34/";
-    private static final String TARGET_FOLDER = TARGET_FOLDER_BASE + FOLDER1 + FOLDER2;
-    private static final String READY_TO_AGENT_FILE = "test_file.cram";
-    private static final String TEST_FILE_TO_UPLOAD = "src/test/resources/abcd1234efgh5678.bin";
+    private static final String FOLDER1 = FILE_SEPARATOR + SUBMISSION_ID.substring(0, 1);
+    private static final String FOLDER2 = FILE_SEPARATOR + SUBMISSION_ID.substring(1, 2);
+    private static final String FOLDER3 = FILE_SEPARATOR + SUBMISSION_ID;
+    private static final String TARGET_FOLDER = TARGET_FOLDER_BASE + FOLDER1 + FOLDER2 + FOLDER3;
+    private static final String READY_TO_AGENT_FILE = FILENAME;
+    private static final String TEST_FILE_TO_UPLOAD = "src/test/resources/abcdefgh12345678.bin";
 
     private static final long OFFSET_SIZE_1 = 1000L;
     private static final long TOTAL_SIZE = 8000L;
@@ -83,18 +86,15 @@ public class PostFinishEventTest {
 
         createTestResources();
 
-        doReturn(TEST_FILE_TO_UPLOAD)
-                .when(postFinishEvent).assembleFullSourcePath(any(String.class));
-        doReturn(TARGET_FOLDER + READY_TO_AGENT_FILE)
-                .when(postFinishEvent).assembleFullTargetPath(any(String.class), any(String.class), any(String.class));
         doNothing()
-                .when(postFinishEvent).createTargetFolder(any(String.class));
+                .when(postFinishEvent).moveFile(any(String.class), any(String.class), any(String.class));
     }
 
     @After
     public void tearDown() throws IOException {
         Files.deleteIfExists(Paths.get(TARGET_FOLDER + READY_TO_AGENT_FILE));
         Files.deleteIfExists(Paths.get(TEST_FILE_TO_UPLOAD));
+        Files.deleteIfExists(Paths.get(TARGET_FOLDER_BASE + FOLDER1 + FOLDER2 + FOLDER3));
         Files.deleteIfExists(Paths.get(TARGET_FOLDER_BASE + FOLDER1 + FOLDER2));
         Files.deleteIfExists(Paths.get(TARGET_FOLDER_BASE + FOLDER1));
         Files.deleteIfExists(Paths.get(TARGET_FOLDER_BASE));
@@ -137,7 +137,7 @@ public class PostFinishEventTest {
     @Test
     public void whenSuccessfullyReceivedAFileButFailedWhenMovingIt_thenItShouldRespondWithAcceptedStatus() throws IOException {
         doThrow(IOException.class)
-                .when(postFinishEvent).createTargetFolder(any(String.class));
+                .when(postFinishEvent).moveFile(any(String.class), any(String.class), any(String.class));
 
         tusFileInfo.setOffsetValue(TOTAL_SIZE);
 
@@ -146,7 +146,7 @@ public class PostFinishEventTest {
         File uploadedFileDocument = fileRepository.findByFilenameAndSubmissionId(FILENAME, SUBMISSION_ID);
 
         assertThat(uploadedFileDocument.getUploadPath(), is(TEST_FILE_TO_UPLOAD));
-        assertThat(uploadedFileDocument.getTargetPath(), is(TARGET_FOLDER + READY_TO_AGENT_FILE));
+        assertThat(uploadedFileDocument.getTargetPath(), is(TARGET_FOLDER + FILE_SEPARATOR + READY_TO_AGENT_FILE));
 
         assertThat(response.getStatusCode(), is(equalTo(HttpStatus.ACCEPTED)));
         assertTrue(Files.notExists(Paths.get(TARGET_FOLDER + READY_TO_AGENT_FILE)));
@@ -164,11 +164,10 @@ public class PostFinishEventTest {
 
         assertThat(fileRepository.count(), is(1L));
         assertThat(finishedFile.getUploadedSize(), is(equalTo(TOTAL_SIZE)));
-        assertTrue(Files.exists(Paths.get(TARGET_FOLDER + READY_TO_AGENT_FILE)));
-        assertThat(finishedFile.getStatus(), is(equalTo(FileStatus.READY_TO_CHECK)));
+        assertThat(finishedFile.getStatus(), is(equalTo(FileStatus.READY_FOR_CHECKSUM)));
 
-        assertThat(finishedFile.getUploadPath(), is(TARGET_FOLDER + READY_TO_AGENT_FILE));
-        assertThat(finishedFile.getTargetPath(), is(TARGET_FOLDER + READY_TO_AGENT_FILE));
+        assertThat(finishedFile.getUploadPath(), is(TARGET_FOLDER + FILE_SEPARATOR + READY_TO_AGENT_FILE));
+        assertThat(finishedFile.getTargetPath(), is(TARGET_FOLDER+ FILE_SEPARATOR + READY_TO_AGENT_FILE));
     }
 
     private void createTestResources() throws IOException {

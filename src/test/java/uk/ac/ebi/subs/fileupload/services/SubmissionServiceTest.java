@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +18,8 @@ import uk.ac.ebi.subs.fileupload.errors.SubmissionNotFoundException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -27,6 +30,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @RestClientTest( { SubmissionService.class } )
 public class SubmissionServiceTest {
 
@@ -34,6 +38,10 @@ public class SubmissionServiceTest {
     private String serviceHost;
     @Value("${subs-api.submissionStatusURI}")
     private String submissionStatusURI;
+    @Value("${subs-api.submissionURI}")
+    private String submissionURI;
+
+    private static final String TEST_JWT_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1MTYzNjk4NTEsImV4cCI6MTU0NzkwNTg1MSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIm5hbWUiOiJLYXJlbCIsIkVtYWlsIjoia2FyZWxAZXhhbXBsZS5jb20iLCJEb21haW5zIjpbInRlYW1fYSIsInRlYW1fYiJdfQ.uGvNNVZZjb3CNc0zX5zj_QPz2pOAGZ7HQZbFeCU7a7g";
 
     @Autowired
     private SubmissionService submissionService;
@@ -43,6 +51,9 @@ public class SubmissionServiceTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+
+
+    // Tests for getSubmissionStatus method //
 
     @Test
     public void getSubmissionStatusByInvalidIdShouldReturnSubmissionNotExistsError() {
@@ -58,7 +69,7 @@ public class SubmissionServiceTest {
         this.thrown.expect(SubmissionNotFoundException.class);
         this.thrown.expectMessage(String.format(SUBMISSION_NOT_EXISTS_MESSAGE, invalidSubmissionUuid));
 
-        submissionService.getSubmissionStatus(invalidSubmissionUuid);
+        submissionService.getSubmissionStatus(invalidSubmissionUuid, TEST_JWT_TOKEN);
     }
 
     @Test
@@ -66,7 +77,7 @@ public class SubmissionServiceTest {
         String validDraftSubmissionUuid = "33334444-aaaa-bbbb-cccc-123456789012";
 
         File submissionJson = new File(getClass().getClassLoader()
-                .getResource("draftSubmissionStatusByValidSubmissionId.json").getFile());
+                .getResource("submissionservice/draftSubmissionStatusByValidSubmissionId.json").getFile());
         String content = new String(Files.readAllBytes(submissionJson.toPath()));
 
         this.server.expect(
@@ -75,7 +86,7 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
         );
 
-        String submissionStatus = submissionService.getSubmissionStatus(validDraftSubmissionUuid);
+        String submissionStatus = submissionService.getSubmissionStatus(validDraftSubmissionUuid, TEST_JWT_TOKEN);
 
         assertThat(submissionStatus, is(equalTo("Draft")));
     }
@@ -85,7 +96,7 @@ public class SubmissionServiceTest {
         String validSubmittedSubmissionUuid = "55556666-aaaa-bbbb-cccc-123456789012";
 
         File submissionJson = new File(getClass().getClassLoader()
-                .getResource("submittedSubmissionStatusByValidSubmissionId.json").getFile());
+                .getResource("submissionservice/submittedSubmissionStatusByValidSubmissionId.json").getFile());
         String content = new String(Files.readAllBytes(submissionJson.toPath()));
 
         this.server.expect(
@@ -94,7 +105,7 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
                 );
 
-        String submissionStatus = submissionService.getSubmissionStatus(validSubmittedSubmissionUuid);
+        String submissionStatus = submissionService.getSubmissionStatus(validSubmittedSubmissionUuid, TEST_JWT_TOKEN);
 
         assertThat(submissionStatus, is(equalTo("Submitted")));
     }
@@ -104,7 +115,7 @@ public class SubmissionServiceTest {
         String submittedSubmissionUuid = "55556666-aaaa-bbbb-cccc-123456789012";
 
         File submissionJson = new File(getClass().getClassLoader()
-                .getResource("submittedSubmissionStatusByValidSubmissionId.json").getFile());
+                .getResource("submissionservice/submittedSubmissionStatusByValidSubmissionId.json").getFile());
         String content = new String(Files.readAllBytes(submissionJson.toPath()));
 
         this.server.expect(
@@ -113,7 +124,7 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
                 );
 
-        assertThat(submissionService.isModifiable(submittedSubmissionUuid), is(false));
+        assertThat(submissionService.isModifiable(submittedSubmissionUuid, TEST_JWT_TOKEN), is(false));
     }
 
     @Test
@@ -121,7 +132,7 @@ public class SubmissionServiceTest {
         String draftSubmissionUuid = "33334444-aaaa-bbbb-cccc-123456789012";
 
         File submissionJson = new File(getClass().getClassLoader()
-                .getResource("draftSubmissionStatusByValidSubmissionId.json").getFile());
+                .getResource("submissionservice/draftSubmissionStatusByValidSubmissionId.json").getFile());
         String content = new String(Files.readAllBytes(submissionJson.toPath()));
 
         this.server.expect(
@@ -130,6 +141,81 @@ public class SubmissionServiceTest {
                 .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
                 );
 
-        assertThat(submissionService.isModifiable(draftSubmissionUuid), is(true));
+        assertThat(submissionService.isModifiable(draftSubmissionUuid, TEST_JWT_TOKEN), is(true));
+    }
+
+
+    // TEST for getTeamNameBySubmissionId method//
+
+    @Test
+    public void getSubmissionByInvalidIdShouldReturnSubmissionNotExistsError() {
+        String invalidSubmissionUuid = "11112222-aaaa-bbbb-cccc-123456789012";
+        String SUBMISSION_NOT_EXISTS_MESSAGE = "Submission not found with id: %s";
+
+        this.server.expect(
+                requestTo(String.format(submissionURI, serviceHost, invalidSubmissionUuid)))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND)
+                );
+
+        this.thrown.expect(SubmissionNotFoundException.class);
+        this.thrown.expectMessage(String.format(SUBMISSION_NOT_EXISTS_MESSAGE, invalidSubmissionUuid));
+
+        submissionService.getTeamNameBySubmissionId(invalidSubmissionUuid, TEST_JWT_TOKEN);
+    }
+
+    @Test
+    public void getSubmissionByValidIdShouldReturnTheTeamNameTheSubmissionBelongsTo() throws IOException {
+        String validDraftSubmissionUuid = "33334444-aaaa-bbbb-cccc-123456789012";
+
+        File submissionJson = new File(getClass().getClassLoader()
+                .getResource("submissionservice/submissionWithMatchingTeam.json").getFile());
+        String content = new String(Files.readAllBytes(submissionJson.toPath()));
+
+        this.server.expect(
+                requestTo(String.format(submissionURI, serviceHost, validDraftSubmissionUuid)))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
+                );
+
+        String teamName = submissionService.getTeamNameBySubmissionId(validDraftSubmissionUuid, TEST_JWT_TOKEN);
+
+        assertThat(teamName, is(equalTo("BelaTeam")));
+    }
+
+    @Test
+    public void whenUserDoesNotBelongToSameTeamAsTheSubmission_ThenUserNotAllowedToModifyIt() throws Exception {
+        String validDraftSubmissionUuid = "33334444-aaaa-bbbb-cccc-123456789012";
+        List<String> teamsOfUser = Arrays.asList("team_a", "team_b", "BelaTeam");
+
+        File submissionJson = new File(getClass().getClassLoader()
+                .getResource("submissionservice/submissionWithNotMatchingTeam.json").getFile());
+        String content = new String(Files.readAllBytes(submissionJson.toPath()));
+
+        this.server.expect(
+                requestTo(String.format(submissionURI, serviceHost, validDraftSubmissionUuid)))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
+                );
+
+        assertThat(submissionService.isUserAllowedToModifyGivenSubmission(validDraftSubmissionUuid, teamsOfUser, TEST_JWT_TOKEN), is(false));
+    }
+
+    @Test
+    public void whenUserBelongsToSameTeamAsTheSubmission_ThenUserAllowedToModifyIt() throws Exception {
+        String validDraftSubmissionUuid = "33334444-aaaa-bbbb-cccc-123456789012";
+        List<String> teamsOfUser = Arrays.asList("team_a", "team_b", "BelaTeam");
+
+        File submissionJson = new File(getClass().getClassLoader()
+                .getResource("submissionservice/submissionWithMatchingTeam.json").getFile());
+        String content = new String(Files.readAllBytes(submissionJson.toPath()));
+
+        this.server.expect(
+                requestTo(String.format(submissionURI, serviceHost, validDraftSubmissionUuid)))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(content, MediaType.APPLICATION_JSON)
+                );
+
+        assertThat(submissionService.isUserAllowedToModifyGivenSubmission(validDraftSubmissionUuid, teamsOfUser, TEST_JWT_TOKEN), is(true));
     }
 }
