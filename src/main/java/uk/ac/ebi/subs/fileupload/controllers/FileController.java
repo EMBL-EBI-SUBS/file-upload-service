@@ -16,6 +16,10 @@ import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
 import uk.ac.ebi.subs.fileupload.services.FileService;
 import uk.ac.ebi.subs.fileupload.services.SubmissionService;
+import uk.ac.ebi.subs.fileupload.util.FileStatus;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This is a REST controller that responsible for handling File document related requests.
@@ -50,6 +54,12 @@ public class FileController {
                     String.format(ErrorMessages.FILE_DOCUMENT_NOT_FOUND, tusId));
         }
 
+        final FileStatus fileToDeleteStatus = fileToDelete.getStatus();
+        if (notDeletableFileStatuses().contains(fileToDeleteStatus)) {
+            return ErrorResponse.assemble(HttpStatus.CONFLICT,
+                    String.format(ErrorMessages.FILE_NOT_IN_DELETABLE_STATUS, fileToDeleteStatus));
+        }
+
         String submissionId = fileToDelete.getSubmissionId();
 
         boolean submissionModifiable;
@@ -71,5 +81,9 @@ public class FileController {
         fileService.removeDocumentMarkedForDeletion(fileToDelete);
 
         return response;
+    }
+
+    private List<FileStatus> notDeletableFileStatuses() {
+        return Arrays.asList(FileStatus.INITIALIZED, FileStatus.UPLOADING);
     }
 }

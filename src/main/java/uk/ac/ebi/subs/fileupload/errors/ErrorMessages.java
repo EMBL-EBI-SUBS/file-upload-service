@@ -14,6 +14,7 @@ public class ErrorMessages {
     public static final String FILE_CREATION_ERROR = "File could not be created.";
     public static final String
             DUPLICATED_FILE_ERROR = "File with name: %s has been already uploaded to the given submission (uuid = %s).";
+    public static final String FILE_NOT_IN_DELETABLE_STATUS = "The file is currently not in a deletable status: %s";
 
     public static final String SUBMISSION_NOT_MODIFIABLE = "The submission with id: %s is not modifiable";
 }
