@@ -80,6 +80,29 @@ public class FileControllerTest {
     }
 
     @Test
+    public void whenDeleteFileWithValidTokenButFileIsNotInDeletableStatus_ThenDeletionFailsWithConflictError() throws Exception {
+        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID, FILENAME);
+        File fileToDelete = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
+        FileStatus uploadingFileStatus = FileStatus.UPLOADING;
+        fileToDelete.setStatus(uploadingFileStatus);
+        String jwtToken = tusFileInfo.getMetadata().getJwtToken();
+
+        given(this.fileService.getFileByTusId(anyString())).willReturn(fileToDelete);
+
+        final String tusId = UUID.randomUUID().toString();
+        tusFileInfo.setTusId(tusId);
+
+        this.mockMvc.perform(delete("/file/{tusId}", tusFileInfo.getTusId())
+                .header("Authorization", "Bearer " + jwtToken))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value(HttpStatus.CONFLICT.getReasonPhrase()))
+                .andExpect(jsonPath("$.status").value(HttpStatus.CONFLICT.value()))
+                .andExpect(jsonPath("$.errors[0]")
+                        .value(String.format(ErrorMessages.FILE_NOT_IN_DELETABLE_STATUS, uploadingFileStatus)));
+    }
+
+    @Test
     public void whenDeleteFileWithValidTokenButFileNotExists_ThenDeletionFailsWithFileNotFoundError() throws Exception {
         given(this.fileService.getFileByTusId(anyString())).willReturn(null);
 
