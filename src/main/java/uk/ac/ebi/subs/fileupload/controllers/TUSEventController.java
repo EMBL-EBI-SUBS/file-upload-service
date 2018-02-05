@@ -29,8 +29,11 @@ public class TUSEventController {
 
     private EventHandlerService eventHandlerService;
 
-    public TUSEventController(EventHandlerService eventHandlerService) {
+    private EventHandlerSupplier eventHandlerSupplier;
+
+    public TUSEventController(EventHandlerService eventHandlerService, EventHandlerSupplier eventHandlerSupplier) {
         this.eventHandlerService = eventHandlerService;
+        this.eventHandlerSupplier = eventHandlerSupplier;
     }
 
     @RequestMapping(value = "/tusevent", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -41,7 +44,6 @@ public class TUSEventController {
         LOGGER.info(tusFileInfo.toString());
         ResponseEntity<Object> response;
 
-        EventHandlerSupplier eventHandlerSupplier = new EventHandlerSupplier();
         TusEvent tusEvent;
         try {
             tusEvent = eventHandlerSupplier.supplyEventHandler(eventName);
