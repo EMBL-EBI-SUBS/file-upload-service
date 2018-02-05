@@ -3,7 +3,7 @@ package uk.ac.ebi.subs.fileupload.eventhandlers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
-import uk.ac.ebi.subs.fileupload.errors.FileApiError;
+import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 
@@ -23,9 +23,8 @@ public class PreCreateEvent implements TusEvent {
             String submissionId = tusFileInfo.getMetadata().getSubmissionID();
 
             if (eventHandlerService.isFileDuplicated(filename, submissionId)) {
-                FileApiError fileApiError = new FileApiError(
-                        HttpStatus.CONFLICT, String.format(ErrorMessages.DUPLICATED_FILE_ERROR, filename, submissionId));
-                response = new ResponseEntity<>(fileApiError, HttpStatus.CONFLICT);
+                response = ErrorResponse.assemble(HttpStatus.CONFLICT,
+                        String.format(ErrorMessages.DUPLICATED_FILE_ERROR, filename, submissionId));
             }
         }
 

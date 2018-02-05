@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
-import uk.ac.ebi.subs.fileupload.errors.FileApiError;
+import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.eventhandlers.EventHandlerSupplier;
 import uk.ac.ebi.subs.fileupload.eventhandlers.TusEvent;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
@@ -47,8 +47,7 @@ public class TUSEventController {
             tusEvent = eventHandlerSupplier.supplyEventHandler(eventName);
             response = tusEvent.handle(tusFileInfo, eventHandlerService);
         } catch (IllegalArgumentException ex) {
-            FileApiError fileApiError = new FileApiError(HttpStatus.CONFLICT, ErrorMessages.NOT_SUPPORTED_EVENT);
-            response = new ResponseEntity<>(fileApiError, HttpStatus.CONFLICT);
+            response = ErrorResponse.assemble(HttpStatus.CONFLICT, ErrorMessages.NOT_SUPPORTED_EVENT);
         }
 
         return response;
