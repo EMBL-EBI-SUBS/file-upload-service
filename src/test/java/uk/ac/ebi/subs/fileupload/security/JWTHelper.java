@@ -20,7 +20,7 @@ import java.security.PrivateKey;
  */
 public class JWTHelper {
 
-    @Value("${security.issuer}")
+    @Value("${file-upload.security.issuer}")
     private static String issuer;
 
 

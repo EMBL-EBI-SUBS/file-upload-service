@@ -26,7 +26,7 @@ public class DefaultTokenHandlerService implements TokenHandlerService {
 
     public JwtConsumer jwtConsumer;
 
-    @Value("${security.certificatePath}")
+    @Value("${file-upload.security.certificatePath}")
     private String certificatePath;
 
     @PostConstruct
@@ -52,6 +52,4 @@ public class DefaultTokenHandlerService implements TokenHandlerService {
 
         return true;
     }
-
-
 }
