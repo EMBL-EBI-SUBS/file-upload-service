@@ -7,6 +7,7 @@ buildscript {
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath 'org.hidetake:gradle-ssh-plugin:1.1.3'
 	}
 }
 
@@ -16,8 +17,10 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'application'
+apply plugin: 'org.hidetake.ssh'
 
 group = 'uk.ac.ebi.subs'
 version = '0.0.1-SNAPSHOT'
@@ -60,3 +63,72 @@ mongo {
 springBoot {
     executable = true
 }
+
+ext.gradle_env = hasProperty('env') ? env : 'dev'
+
+publish {
+	dependsOn assemble
+}
+
+remotes {
+	dev {
+		role('dev')
+		host = project.hasProperty(project.name + "DevDeployTarget") ? getProperty(project.name + "DevDeployTarget") : 'localhost'
+	}
+}
+
+ssh.settings {
+	user = 'sub_adm'
+}
+
+if (project.hasProperty('sshKeyFile')) {
+	ssh.settings.identity = new File(sshKeyFile)
+}
+
+if (project.hasProperty('sshPassphrase')) {
+	ssh.settings.passphrase = sshPassphrase
+}
+
+task deployJar(type: SshTask, dependsOn: 'build') {
+	doLast {
+		sshRun()
+	}
+	ssh.settings {
+		knownHosts = allowAnyHosts
+	}
+}
+
+task testSsh(type: SshTask) {
+	doLast {
+		sshTestRun()
+	}
+	ssh.settings {
+		knownHosts = allowAnyHosts
+	}
+}
+
+private Object sshRun() {
+	ssh.run {
+		session(remotes.role(gradle_env)) {
+			def jarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
+			File jarDeployFile = new File("/homes/sub_adm/tc_subs/$project.name/$remote.name/jar",jarFileName)
+			File jarDeployDir = jarDeployFile.getParentFile()
+			println "Uploading jar $jar.archivePath.name to $jarDeployFile.absolutePath  area on $remote"
+			put(jar.archivePath.absolutePath, jarDeployFile.absolutePath)
+			println "creating symbolic link to $jar.archiveName"
+			def result = execute "ln -s -f $jarDeployFile.absolutePath $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
+			println result
+			println "updating permissions of $jarDeployDir/$jar.archiveName"
+			execute "chmod u+x $jarDeployDir/*", ignoreError: false
+		}
+	}
+}
+
+private Object sshTestRun(){
+	ssh.run {
+		session(remotes.role(gradle_env)){
+			println "started ssh session"
+		}
+	}
+}
+
