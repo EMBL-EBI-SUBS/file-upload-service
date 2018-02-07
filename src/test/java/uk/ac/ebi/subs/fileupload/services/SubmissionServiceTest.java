@@ -34,11 +34,11 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @RestClientTest( { SubmissionService.class } )
 public class SubmissionServiceTest {
 
-    @Value("${subs-api.host}")
+    @Value("${file-upload.subs-api.host}")
     private String serviceHost;
-    @Value("${subs-api.submissionStatusURI}")
+    @Value("${file-upload.subs-api.submissionStatusURI}")
     private String submissionStatusURI;
-    @Value("${subs-api.submissionURI}")
+    @Value("${file-upload.subs-api.submissionURI}")
     private String submissionURI;
 
     private static final String TEST_JWT_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1MTYzNjk4NTEsImV4cCI6MTU0NzkwNTg1MSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIm5hbWUiOiJLYXJlbCIsIkVtYWlsIjoia2FyZWxAZXhhbXBsZS5jb20iLCJEb21haW5zIjpbInRlYW1fYSIsInRlYW1fYiJdfQ.uGvNNVZZjb3CNc0zX5zj_QPz2pOAGZ7HQZbFeCU7a7g";

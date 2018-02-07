@@ -24,11 +24,11 @@ public class DefaultSubmissionService implements SubmissionService {
 
     private RestTemplate restTemplate;
 
-    @Value("${subs-api.host}")
+    @Value("${file-upload.subs-api.host}")
     private String serviceHost;
-    @Value("${subs-api.submissionStatusURI}")
+    @Value("${file-upload.subs-api.submissionStatusURI}")
     private String submissionStatusURI;
-    @Value("${subs-api.submissionURI}")
+    @Value("${file-upload.subs-api.submissionURI}")
     private String submissionURI;
 
     public DefaultSubmissionService(RestTemplateBuilder restTemplateBuilder) {

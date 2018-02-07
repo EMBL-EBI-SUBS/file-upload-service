@@ -1,9 +1,10 @@
-subs-api:
-  host: https://example.com
-  submissionStatusURI: "%s/api/submissions/%s/submissionStatus"
-  submissionURI: "%s/api/submissions/%s"
-
-
-security:
-  issuer: https://some.secure.com
-  certificatePath: test_public_key.der
+file-upload:
+  subs-api:
+    host: https://example.com
+    submissionStatusURI: "%s/api/submissions/%s/submissionStatus"
+    submissionURI: "%s/api/submissions/%s"
+  security:
+    issuer: https://some.secure.com
+    certificatePath: aap_public_key.der
+  sourceBasePath: src/test/resources
+  targetBasePath: ready_to_agent
