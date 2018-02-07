@@ -5,6 +5,6 @@ file-upload:
     submissionURI: "%s/api/submissions/%s"
   security:
     issuer: https://some.secure.com
-    certificatePath: test_public_key.der
+    certificatePath: aap_public_key.der
   sourceBasePath: src/test/resources
   targetBasePath: ready_to_agent
