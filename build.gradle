@@ -71,10 +71,18 @@ publish {
 }
 
 remotes {
-	dev {
-		role('dev')
-		host = project.hasProperty(project.name + "DevDeployTarget") ? getProperty(project.name + "DevDeployTarget") : 'localhost'
-	}
+    prodFUSHH1 {
+        role('prod')
+        host = project.hasProperty(project.name + "ProdHH1DeployTarget") ? getProperty(project.name + "ProdHH1DeployTarget") : 'localhost'
+    }
+    prodFUSHH2 {
+        role('prod')
+        host = project.hasProperty(project.name + "ProdHH2DeployTarget") ? getProperty(project.name + "ProdHH2DeployTarget") : 'localhost'
+    }
+    prodFUSHH3 {
+        role('prod')
+        host = project.hasProperty(project.name + "ProdHH3DeployTarget") ? getProperty(project.name + "ProdHH3DeployTarget") : 'localhost'
+    }
 }
 
 ssh.settings {
