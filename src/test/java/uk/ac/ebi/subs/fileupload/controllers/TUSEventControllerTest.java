@@ -10,6 +10,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @WebMvcTest
 @ComponentScan("uk.ac.ebi.subs.fileupload")
-public class TUSEventTypeControllerTest {
+public class TUSEventControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -99,6 +100,7 @@ public class TUSEventTypeControllerTest {
         String eventName = TUSEventType.PRE_CREATE.getEventType();
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
+        given(this.validationService.validateMetadata(tusFileInfo.getMetadata())).willReturn(new ResponseEntity<>(HttpStatus.OK));
         given(this.validationService.validateFileUploadRequest(INVALID_TOKEN, INVALID_SUBMISSION_UUID)).willReturn(false);
 
         this.mockMvc.perform(post("/tusevent")
@@ -121,6 +123,7 @@ public class TUSEventTypeControllerTest {
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
         given(this.validationService.validateFileUploadRequest(VALID_TOKEN, VALID_SUBMISSION_UUID)).willReturn(true);
+        given(this.validationService.validateMetadata(tusFileInfo.getMetadata())).willReturn(new ResponseEntity<>(HttpStatus.OK));
 
         this.mockMvc.perform(post("/tusevent")
                 .accept(MediaType.APPLICATION_JSON)

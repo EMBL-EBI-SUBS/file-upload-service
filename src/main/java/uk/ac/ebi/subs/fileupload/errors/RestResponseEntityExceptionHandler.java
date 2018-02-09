@@ -22,7 +22,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     @ExceptionHandler(value = InvalidTokenException.class)
     protected ResponseEntity<Object> handleInvalidToken(RuntimeException ex) {
         String exceptionMessage = ex.getMessage();
-        ResponseEntity<Object> errorResponse = ErrorResponse.assemble(HttpStatus.NOT_FOUND, exceptionMessage);
+        ResponseEntity<Object> errorResponse = ErrorResponse.assemble(HttpStatus.UNAUTHORIZED, exceptionMessage);
         LOGGER.info("InvalidTokenException occurred:: " + exceptionMessage);
         return errorResponse;
     }

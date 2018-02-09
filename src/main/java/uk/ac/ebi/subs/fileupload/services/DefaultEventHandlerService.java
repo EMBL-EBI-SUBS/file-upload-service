@@ -3,6 +3,7 @@ package uk.ac.ebi.subs.fileupload.services;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
@@ -23,17 +24,19 @@ public class DefaultEventHandlerService implements EventHandlerService {
 
     @Override
     public ResponseEntity<Object> validateUploadRequest(TUSFileInfo tusFileInfo) {
-        ResponseEntity<Object> response;
-
         TUSFileInfo.MetaData fileMetadata = tusFileInfo.getMetadata();
+
+        ResponseEntity<Object> response = validationService.validateMetadata(fileMetadata);
+
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            return response;
+        }
 
         String jwtToken = fileMetadata.getJwtToken();
         String submissionId = fileMetadata.getSubmissionID();
 
         boolean isValidRequest = validationService.validateFileUploadRequest(jwtToken, submissionId);
-        if (isValidRequest) {
-            response = new ResponseEntity<>(HttpStatus.OK);
-        } else {
+        if (!isValidRequest) {
             // make it an error object
             response = ErrorResponse.assemble(HttpStatus.CONFLICT, ErrorMessages.INVALID_PARAMETERS);
         }

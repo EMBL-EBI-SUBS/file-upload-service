@@ -17,4 +17,8 @@ public class ErrorMessages {
     public static final String FILE_NOT_IN_DELETABLE_STATUS = "The file is currently not in a deletable status: %s";
 
     public static final String SUBMISSION_NOT_MODIFIABLE = "The submission with id: %s is not modifiable";
+
+    public static final String SUBMISSION_ID_MANDATORY = "It is mandatory to send the submission ID in the metadata of the request.";
+    public static final String JWT_TOKEN_MANDATORY = "It is mandatory to send the authorization token (JWT) in the metadata of the request.";
+    public static final String FILENAME_MANDATORY = "It is mandatory to send the filename in the metadata of the request.";
 }
