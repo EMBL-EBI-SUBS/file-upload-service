@@ -4,13 +4,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
+import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
+import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
 import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
 import uk.ac.ebi.subs.fileupload.repository.util.FileHelper;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 
@@ -23,6 +31,7 @@ public class EventHandlerServiceTest {
     private static final String JWT_TOKEN = "dummy.jwt.token";
 
     private File persistedFile;
+    private TUSFileInfo tusFileInfo;
 
     @MockBean
     private FileRepository fileRepository;
@@ -34,8 +43,8 @@ public class EventHandlerServiceTest {
 
     @Before
     public void setup() {
-        persistedFile = FileHelper.convertTUSFileInfoToFile(
-                TusFileInfoHelper.generateTUSFileInfo(JWT_TOKEN, SUBMISSION_ID, EXISTING_FILE_NAME));
+        tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(JWT_TOKEN, SUBMISSION_ID, EXISTING_FILE_NAME);
+        persistedFile = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
 
         eventHandlerService = new DefaultEventHandlerService(validationService, fileRepository);
     }
@@ -58,6 +67,42 @@ public class EventHandlerServiceTest {
         boolean isDuplicatedFile = eventHandlerService.isFileDuplicated(NEW_FILE_NAME, SUBMISSION_ID);
 
         assertFalse(isDuplicatedFile);
+    }
+
+    @Test
+    public void whenFilenameNotSentWithMetadata_ThenUploadFailsWithUnprocessableEntityStatus() {
+        given(this.validationService.validateMetadata(tusFileInfo.getMetadata()))
+                .willReturn(
+                        ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY,
+                                ErrorMessages.FILENAME_MANDATORY));
+
+        ResponseEntity<Object> response = eventHandlerService.validateUploadRequest(tusFileInfo);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpStatus.UNPROCESSABLE_ENTITY)));
+    }
+
+    @Test
+    public void whenSubmissionIdNotSentWithMetadata_ThenUploadFailsWithUnprocessableEntityStatus() {
+        given(this.validationService.validateMetadata(tusFileInfo.getMetadata()))
+                .willReturn(
+                        ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY,
+                                ErrorMessages.SUBMISSION_ID_MANDATORY));
+
+        ResponseEntity<Object> response = eventHandlerService.validateUploadRequest(tusFileInfo);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpStatus.UNPROCESSABLE_ENTITY)));
+    }
+
+    @Test
+    public void whenJWTTokenNotSentWithMetadata_ThenUploadFailsWithUnprocessableEntityStatus() {
+        given(this.validationService.validateMetadata(tusFileInfo.getMetadata()))
+                .willReturn(
+                        ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY,
+                                ErrorMessages.JWT_TOKEN_MANDATORY));
+
+        ResponseEntity<Object> response = eventHandlerService.validateUploadRequest(tusFileInfo);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpStatus.UNPROCESSABLE_ENTITY)));
     }
 }
 
