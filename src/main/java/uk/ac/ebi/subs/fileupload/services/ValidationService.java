@@ -14,9 +14,9 @@ public interface ValidationService {
      *
      * @param jwt the JWT security token from the original TUS client's file upload request
      * @param submissionUuid the UUID of the submission the file would belong to
-     * @return true if both of the above is valid, otherwise false
+     * @return response entity with OK HTTP status if everything is fine, otherwise other HTTP error status
      */
-    boolean validateFileUploadRequest(String jwt, String submissionUuid);
+    ResponseEntity<Object> validateFileUploadRequest(String jwt, String submissionUuid);
 
     ResponseEntity<Object> validateMetadata(TUSFileInfo.MetaData fileMetadata);
 }
