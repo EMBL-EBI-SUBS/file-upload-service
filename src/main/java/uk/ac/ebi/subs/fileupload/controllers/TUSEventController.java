@@ -49,7 +49,7 @@ public class TUSEventController {
             tusEvent = eventHandlerSupplier.supplyEventHandler(eventName);
             response = tusEvent.handle(tusFileInfo, eventHandlerService);
         } catch (IllegalArgumentException ex) {
-            response = ErrorResponse.assemble(HttpStatus.CONFLICT, ErrorMessages.NOT_SUPPORTED_EVENT);
+            response = ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY, ErrorMessages.NOT_SUPPORTED_EVENT);
         }
 
         return response;

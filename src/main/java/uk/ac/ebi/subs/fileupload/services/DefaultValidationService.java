@@ -21,17 +21,31 @@ public class DefaultValidationService implements ValidationService {
     }
 
     @Override
-    public boolean validateFileUploadRequest(String jwtToken, String submissionUuid) {
+    public ResponseEntity<Object> validateFileUploadRequest(String jwtToken, String submissionUuid) {
 
         boolean isValidToken = tokenHandlerService.validateToken(jwtToken);
+
+        if (!isValidToken) {
+            return ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY, ErrorMessages.INVALID_JWT_TOKEN);
+        }
 
         JWTExtractor jwtExtractor = new JWTExtractor(jwtToken);
 
         boolean isUserAllowedToModifyGivenSubmission =
                 submissionService.isUserAllowedToModifyGivenSubmission(submissionUuid, jwtExtractor.getUserDomains(), jwtToken);
+        if (!isUserAllowedToModifyGivenSubmission) {
+            return ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY,
+                    String.format(ErrorMessages.USER_NOT_ALLOWED_TO_MODIFY_GIVEN_SUBMISSION, submissionUuid));
+        }
+
         boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid, jwtToken);
 
-        return isValidToken && isUserAllowedToModifyGivenSubmission && isSubmissionModifiable;
+        if (!isSubmissionModifiable) {
+            return ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY,
+                    String.format(ErrorMessages.SUBMISSION_NOT_MODIFIABLE, submissionUuid));
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override

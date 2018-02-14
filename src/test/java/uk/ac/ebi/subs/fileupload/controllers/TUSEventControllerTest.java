@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
+import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
 import uk.ac.ebi.subs.fileupload.services.ValidationService;
@@ -21,7 +22,6 @@ import uk.ac.ebi.subs.fileupload.util.TUSEventType;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -53,12 +53,13 @@ public class TUSEventControllerTest {
     private static final String FILENAME = "test_file.cram";
 
     @Test
-    public void whenEventNameUnknownAndTokenInvalidOrSubmissionNotFound_ThenValidationFails() throws Exception {
+    public void whenEventNameUnknown_ThenValidationFails() throws Exception {
         TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(INVALID_TOKEN, INVALID_SUBMISSION_UUID, FILENAME);
         String unknownEventName = "unknown event";
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
-        given(this.validationService.validateFileUploadRequest(INVALID_TOKEN, INVALID_SUBMISSION_UUID)).willReturn(false);
+        given(this.validationService.validateFileUploadRequest(INVALID_TOKEN, INVALID_SUBMISSION_UUID))
+                .willReturn(new ResponseEntity<>(HttpStatus.OK));
 
         this.mockMvc.perform(post("/tusevent")
                 .accept(MediaType.APPLICATION_JSON)
@@ -67,30 +68,9 @@ public class TUSEventControllerTest {
                 .header("Hook-Name", unknownEventName)
         )
                 .andDo(print())
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.title").value(HttpStatus.CONFLICT.getReasonPhrase()))
-                .andExpect(jsonPath("$.status").value(HttpStatus.CONFLICT.value()))
-                .andExpect(jsonPath("$.errors[0]").value(ErrorMessages.NOT_SUPPORTED_EVENT));
-    }
-
-    @Test
-    public void whenEventNameInvalidAndTokenValidAndSubmissionExists_ThenValidationFails() throws Exception {
-        TUSFileInfo tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(VALID_TOKEN, VALID_SUBMISSION_UUID, FILENAME);
-        String unknownEventName = "unknown event";
-        String json = objectMapper.writeValueAsString(tusFileInfo);
-
-        given(this.validationService.validateFileUploadRequest(anyString(), anyString())).willReturn(true);
-
-        this.mockMvc.perform(post("/tusevent")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json)
-                .header("Hook-Name", unknownEventName)
-        )
-                .andDo(print())
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.title").value(HttpStatus.CONFLICT.getReasonPhrase()))
-                .andExpect(jsonPath("$.status").value(HttpStatus.CONFLICT.value()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.title").value(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()))
+                .andExpect(jsonPath("$.status").value(HttpStatus.UNPROCESSABLE_ENTITY.value()))
                 .andExpect(jsonPath("$.errors[0]").value(ErrorMessages.NOT_SUPPORTED_EVENT));
     }
 
@@ -101,7 +81,8 @@ public class TUSEventControllerTest {
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
         given(this.validationService.validateMetadata(tusFileInfo.getMetadata())).willReturn(new ResponseEntity<>(HttpStatus.OK));
-        given(this.validationService.validateFileUploadRequest(INVALID_TOKEN, INVALID_SUBMISSION_UUID)).willReturn(false);
+        given(this.validationService.validateFileUploadRequest(INVALID_TOKEN, INVALID_SUBMISSION_UUID))
+                .willReturn(ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY, ErrorMessages.INVALID_JWT_TOKEN));
 
         this.mockMvc.perform(post("/tusevent")
                 .accept(MediaType.APPLICATION_JSON)
@@ -110,10 +91,10 @@ public class TUSEventControllerTest {
                 .header("Hook-Name", eventName)
         )
                 .andDo(print())
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.title").value(HttpStatus.CONFLICT.getReasonPhrase()))
-                .andExpect(jsonPath("$.status").value(HttpStatus.CONFLICT.value()))
-                .andExpect(jsonPath("$.errors[0]").value(ErrorMessages.INVALID_PARAMETERS));
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.title").value(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()))
+                .andExpect(jsonPath("$.status").value(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+                .andExpect(jsonPath("$.errors[0]").value(ErrorMessages.INVALID_JWT_TOKEN));
     }
 
     @Test
@@ -122,7 +103,8 @@ public class TUSEventControllerTest {
         String eventName = TUSEventType.PRE_CREATE.getEventType();
         String json = objectMapper.writeValueAsString(tusFileInfo);
 
-        given(this.validationService.validateFileUploadRequest(VALID_TOKEN, VALID_SUBMISSION_UUID)).willReturn(true);
+        given(this.validationService.validateFileUploadRequest(VALID_TOKEN, VALID_SUBMISSION_UUID))
+                .willReturn(new ResponseEntity<>(HttpStatus.OK));
         given(this.validationService.validateMetadata(tusFileInfo.getMetadata())).willReturn(new ResponseEntity<>(HttpStatus.OK));
 
         this.mockMvc.perform(post("/tusevent")
