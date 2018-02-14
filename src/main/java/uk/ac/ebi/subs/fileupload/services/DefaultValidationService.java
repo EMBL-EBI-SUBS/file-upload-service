@@ -7,7 +7,6 @@ import org.springframework.util.StringUtils;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.repository.util.JWTExtractor;
 
 @Service
 public class DefaultValidationService implements ValidationService {
@@ -27,15 +26,6 @@ public class DefaultValidationService implements ValidationService {
 
         if (!isValidToken) {
             return ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY, ErrorMessages.INVALID_JWT_TOKEN);
-        }
-
-        JWTExtractor jwtExtractor = new JWTExtractor(jwtToken);
-
-        boolean isUserAllowedToModifyGivenSubmission =
-                submissionService.isUserAllowedToModifyGivenSubmission(submissionUuid, jwtExtractor.getUserDomains(), jwtToken);
-        if (!isUserAllowedToModifyGivenSubmission) {
-            return ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY,
-                    String.format(ErrorMessages.USER_NOT_ALLOWED_TO_MODIFY_GIVEN_SUBMISSION, submissionUuid));
         }
 
         boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid, jwtToken);

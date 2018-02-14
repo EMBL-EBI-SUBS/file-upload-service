@@ -23,6 +23,4 @@ public class ErrorMessages {
     public static final String FILENAME_MANDATORY = "It is mandatory to send the filename in the metadata of the request.";
 
     public static final String INVALID_JWT_TOKEN = "The authorization token (JWT) is invalid";
-    public static final String USER_NOT_ALLOWED_TO_MODIFY_GIVEN_SUBMISSION = "The user is not allowed to modify the given submission: %s";
-    public static final String GIVEN_SUBMISSION_NOT_MODIFYABLE = "The given submission: %s is not modifiable";
 }

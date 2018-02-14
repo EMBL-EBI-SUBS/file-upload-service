@@ -14,10 +14,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.fileupload.errors.SubmissionNotFoundException;
-import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
-
-import java.util.List;
 
 @Service
 public class DefaultSubmissionService implements SubmissionService {
@@ -59,33 +56,6 @@ public class DefaultSubmissionService implements SubmissionService {
     public boolean isModifiable(String submissionUuid, String jwtToken) throws SubmissionNotFoundException {
 
         return getSubmissionStatus(submissionUuid, jwtToken).equals(SubmissionStatusEnum.Draft.name());
-    }
-
-    @Override
-    public String getTeamNameBySubmissionId(String submissionId, String jwtToken) throws SubmissionNotFoundException {
-        ResponseEntity<Submission> submissionResponse;
-        try {
-            submissionResponse = restTemplate.exchange(
-                    String.format(submissionURI, serviceHost, submissionId),
-                    HttpMethod.GET,
-                    createRequestEntity(jwtToken),
-                    Submission.class);
-        } catch (HttpClientErrorException httpClientException) {
-            if (httpClientException.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                throw new SubmissionNotFoundException(submissionId);
-            } else {
-                throw httpClientException;
-            }
-        }
-
-        return submissionResponse.getBody().getTeam().getName();
-    }
-
-    @Override
-    public boolean isUserAllowedToModifyGivenSubmission(String submissionId, List<String> teamNames, String jwtToken) {
-        String teamNameBySubmissionId = getTeamNameBySubmissionId(submissionId, jwtToken);
-
-        return teamNames.contains(teamNameBySubmissionId);
     }
 
     private HttpEntity<?> createRequestEntity(String jwtToken) {
