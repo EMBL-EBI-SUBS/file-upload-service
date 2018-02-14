@@ -14,7 +14,7 @@ import java.security.cert.X509Certificate;
  */
 public interface TokenHandlerService {
 
-    boolean validateToken(String token);
+    void validateToken(String token);
 
     default JwtConsumer configureJwtConsumer(String path) throws Exception {
         InputStream inputStream = new DefaultResourceLoader().getResource(path).getInputStream();

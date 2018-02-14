@@ -56,7 +56,7 @@ public class TokenHandlerServiceTest {
         claims.setClaim("name", "Alice Wonderland");
         String validToken = JWTHelper.build(claims, signingKey, AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
 
-        assertThat(subject.validateToken(validToken), is(true));
+        subject.validateToken(validToken);
     }
 
     @Test
