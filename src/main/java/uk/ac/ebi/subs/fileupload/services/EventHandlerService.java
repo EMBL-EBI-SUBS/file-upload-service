@@ -14,4 +14,6 @@ public interface EventHandlerService {
     ResponseEntity<Object> persistOrUpdateFileInformation(File file);
 
     boolean isFileDuplicated(String fileName, String submissionUUID);
+
+    boolean isEnoughDiskSpaceExists(long fileSize);
 }

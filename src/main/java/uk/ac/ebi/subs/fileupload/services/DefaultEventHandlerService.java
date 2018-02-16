@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.fileupload.services;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,9 @@ public class DefaultEventHandlerService implements EventHandlerService {
     private ValidationService validationService;
     private FileRepository fileRepository;
 
+    @Value("${file-upload.sourceBasePath}")
+    private String sourcePath;
+
     public DefaultEventHandlerService(ValidationService validationService, FileRepository fileRepository) {
         this.validationService = validationService;
         this.fileRepository = fileRepository;
@@ -31,6 +35,11 @@ public class DefaultEventHandlerService implements EventHandlerService {
             return response;
         }
 
+        if (!isEnoughDiskSpaceExists(tusFileInfo.getSize())) {
+            return ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY,
+                    String.format(ErrorMessages.NOT_ENOUGH_DISKSPACE, tusFileInfo.getMetadata().getFilename()));
+        }
+
         String jwtToken = fileMetadata.getJwtToken();
         String submissionId = fileMetadata.getSubmissionID();
 
@@ -43,6 +52,14 @@ public class DefaultEventHandlerService implements EventHandlerService {
         File existedFile = fileRepository.findByFilenameAndSubmissionId(fileName, submissionUUID);
 
         return existedFile != null;
+    }
+
+    @Override
+    public boolean isEnoughDiskSpaceExists(long fileSize) {
+        java.io.File file = new java.io.File(sourcePath);
+        long usableSpace = file.getUsableSpace();
+
+        return usableSpace > fileSize;
     }
 
     @Override
