@@ -27,6 +27,14 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return errorResponse;
     }
 
+    @ExceptionHandler(value = MalformedTokenException.class)
+    protected ResponseEntity<Object> handleMalformedToken(RuntimeException ex) {
+        String exceptionMessage = ex.getMessage();
+        ResponseEntity<Object> errorResponse = ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY, exceptionMessage);
+        LOGGER.info("MalformedTokenException occurred:: " + exceptionMessage);
+        return errorResponse;
+    }
+
     @ExceptionHandler(value = SubmissionNotFoundException.class)
     protected ResponseEntity<Object> handleSubmissionNotFound(RuntimeException ex) {
         String exceptionMessage = ex.getMessage();

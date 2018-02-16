@@ -22,11 +22,7 @@ public class DefaultValidationService implements ValidationService {
     @Override
     public ResponseEntity<Object> validateFileUploadRequest(String jwtToken, String submissionUuid) {
 
-        boolean isValidToken = tokenHandlerService.validateToken(jwtToken);
-
-        if (!isValidToken) {
-            return ErrorResponse.assemble(HttpStatus.UNPROCESSABLE_ENTITY, ErrorMessages.INVALID_JWT_TOKEN);
-        }
+        tokenHandlerService.validateToken(jwtToken);
 
         boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid, jwtToken);
 

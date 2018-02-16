@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.fileupload.errors.InvalidTokenException;
+import uk.ac.ebi.subs.fileupload.errors.MalformedTokenException;
 
 import javax.annotation.PostConstruct;
 
@@ -41,15 +42,13 @@ public class DefaultTokenHandlerService implements TokenHandlerService {
     }
 
     @Override
-    public boolean validateToken(String token) {
+    public void validateToken(String token) {
         try {
             jwtConsumer.processToClaims(token);
         } catch (InvalidJwtException e ) {
             throw new InvalidTokenException("Cannot parse token: " + e.getMessage(), e);
         } catch (Exception e) {
-            throw new RuntimeException("Cannot parse token: "+e.getMessage(), e);
+            throw new MalformedTokenException("Cannot parse token: " + e.getMessage(), e);
         }
-
-        return true;
     }
 }
