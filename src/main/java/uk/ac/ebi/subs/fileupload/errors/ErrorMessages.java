@@ -5,7 +5,6 @@ package uk.ac.ebi.subs.fileupload.errors;
  */
 public class ErrorMessages {
 
-    public static final String INVALID_PARAMETERS = "Invalid parameters.";
     public static final String NOT_SUPPORTED_EVENT = "Not supported event.";
     public static final String UNAUTHORIZED_REQUEST = "The user is not authorized to send this request.";
 
@@ -23,4 +22,5 @@ public class ErrorMessages {
     public static final String FILENAME_MANDATORY = "It is mandatory to send the filename in the metadata of the request.";
 
     public static final String INVALID_JWT_TOKEN = "The authorization token (JWT) is invalid";
+    public static final String NOT_ENOUGH_DISKSPACE = "The file storage has not enough usable disk space to store the file: %s";
 }

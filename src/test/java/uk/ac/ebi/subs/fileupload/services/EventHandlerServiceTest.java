@@ -60,7 +60,7 @@ public class EventHandlerServiceTest {
     }
 
     @Test
-    public void whenFileNotYetUploadedToAGivenSubmission_ThenUploadItWillSucceed() {
+    public void whenFileNotYetUploadedToAGivenSubmission_ThenUploadWillSucceed() {
         given(this.fileRepository.findByFilenameAndSubmissionId(NEW_FILE_NAME, SUBMISSION_ID))
                 .willReturn(null);
 
