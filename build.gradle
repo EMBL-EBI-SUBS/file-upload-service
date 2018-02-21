@@ -1,0 +1,154 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.1.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath 'org.hidetake:gradle-ssh-plugin:1.1.3'
+	}
+}
+
+plugins {
+	id 'com.sourcemuse.mongo' version '1.0.0'
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'application'
+apply plugin: 'org.hidetake.ssh'
+
+group = 'uk.ac.ebi.subs'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+mainClassName = "uk.ac.ebi.subs.fileupload.FileUploadServiceApplication"
+
+repositories {
+	mavenCentral()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+}
+
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
+
+    compile('uk.ac.ebi.subs:subs-repository:1.3.0-SNAPSHOT')
+
+    compile('org.bitbucket.b_c:jose4j:0.5.2')
+	compile("org.springframework.boot:spring-boot-starter-actuator")
+
+	compileOnly('org.projectlombok:lombok')
+
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+test {
+	testLogging {
+		events "passed", "skipped", "failed"
+		exceptionFormat "full"
+	}
+	runWithMongoDb = true
+}
+
+mongo {
+	mongoVersion = "3.4.3"
+}
+
+springBoot {
+    executable = true
+}
+
+ext.gradle_env = hasProperty('env') ? env : 'dev'
+
+publish {
+	dependsOn assemble
+}
+
+remotes {
+    devFUSHX {
+        role('dev')
+        host = project.hasProperty(project.name + "DevHXDeployTarget") ? getProperty(project.name + "DevHXDeployTarget") : 'localhost'
+    }
+    testFUSHH1 {
+        role('test')
+        host = project.hasProperty(project.name + "TestHH1DeployTarget") ? getProperty(project.name + "TestHH1DeployTarget") : 'localhost'
+    }
+    testFUSHH2 {
+        role('test')
+        host = project.hasProperty(project.name + "TestHH2DeployTarget") ? getProperty(project.name + "TestHH2DeployTarget") : 'localhost'
+    }
+    prodFUSHH1 {
+        role('prod')
+        host = project.hasProperty(project.name + "ProdHH1DeployTarget") ? getProperty(project.name + "ProdHH1DeployTarget") : 'localhost'
+    }
+    prodFUSHH2 {
+        role('prod')
+        host = project.hasProperty(project.name + "ProdHH2DeployTarget") ? getProperty(project.name + "ProdHH2DeployTarget") : 'localhost'
+    }
+    prodFUSHH3 {
+        role('prod')
+        host = project.hasProperty(project.name + "ProdHH3DeployTarget") ? getProperty(project.name + "ProdHH3DeployTarget") : 'localhost'
+    }
+}
+
+ssh.settings {
+	user = 'sub_adm'
+}
+
+if (project.hasProperty('sshKeyFile')) {
+	ssh.settings.identity = new File(sshKeyFile)
+}
+
+if (project.hasProperty('sshPassphrase')) {
+	ssh.settings.passphrase = sshPassphrase
+}
+
+task deployJar(type: SshTask, dependsOn: 'build') {
+	doLast {
+		sshRun()
+	}
+	ssh.settings {
+		knownHosts = allowAnyHosts
+	}
+}
+
+task testSsh(type: SshTask) {
+	doLast {
+		sshTestRun()
+	}
+	ssh.settings {
+		knownHosts = allowAnyHosts
+	}
+}
+
+private Object sshRun() {
+	ssh.run {
+		session(remotes.role(gradle_env)) {
+			def jarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
+			File jarDeployFile = new File("/homes/sub_adm/tc_subs/$project.name/$remote.name/jar",jarFileName)
+			File jarDeployDir = jarDeployFile.getParentFile()
+			println "Uploading jar $jar.archivePath.name to $jarDeployFile.absolutePath  area on $remote"
+			put(jar.archivePath.absolutePath, jarDeployFile.absolutePath)
+			println "creating symbolic link to $jar.archiveName"
+			def result = execute "ln -s -f $jarDeployFile.absolutePath $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
+			println result
+			println "updating permissions of $jarDeployDir/$jar.archiveName"
+			execute "chmod u+x $jarDeployDir/*", ignoreError: false
+		}
+	}
+}
+
+private Object sshTestRun(){
+	ssh.run {
+		session(remotes.role(gradle_env)){
+			println "started ssh session"
+		}
+	}
+}
+
