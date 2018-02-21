@@ -71,8 +71,20 @@ publish {
 }
 
 remotes {
-    prodFUSHH1 {
+    devFUSHX {
         role('dev')
+        host = project.hasProperty(project.name + "DevHXDeployTarget") ? getProperty(project.name + "DevHXDeployTarget") : 'localhost'
+    }
+    testFUSHH1 {
+        role('test')
+        host = project.hasProperty(project.name + "TestHH1DeployTarget") ? getProperty(project.name + "TestHH1DeployTarget") : 'localhost'
+    }
+    testFUSHH2 {
+        role('test')
+        host = project.hasProperty(project.name + "TestHH2DeployTarget") ? getProperty(project.name + "TestHH2DeployTarget") : 'localhost'
+    }
+    prodFUSHH1 {
+        role('prod')
         host = project.hasProperty(project.name + "ProdHH1DeployTarget") ? getProperty(project.name + "ProdHH1DeployTarget") : 'localhost'
     }
     prodFUSHH2 {
