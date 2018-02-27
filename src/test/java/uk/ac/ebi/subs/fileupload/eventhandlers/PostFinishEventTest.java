@@ -5,8 +5,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +60,9 @@ public class PostFinishEventTest {
 
     private static final long OFFSET_SIZE_1 = 1000L;
     private static final long TOTAL_SIZE = 8000L;
+
+    @MockBean
+    private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @SpyBean
     private EventHandlerService eventHandlerService;
