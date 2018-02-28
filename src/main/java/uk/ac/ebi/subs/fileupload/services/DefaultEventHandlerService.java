@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.fileupload.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,8 @@ public class DefaultEventHandlerService implements EventHandlerService {
     private String sourcePath;
 
     private static final String EVENT_FILE_CHECKSUM_GENERATION = "file.checksum.generation";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultEventHandlerService.class);
 
     public DefaultEventHandlerService(ValidationService validationService, FileRepository fileRepository, RabbitMessagingTemplate rabbitMessagingTemplate) {
         this.validationService = validationService;
@@ -92,6 +96,9 @@ public class DefaultEventHandlerService implements EventHandlerService {
     public void executeChecksumCalculation(File file) {
         ChecksumGenerationMessage checksumGenerationMessage = new ChecksumGenerationMessage();
         checksumGenerationMessage.setGeneratedTusId(file.getGeneratedTusId());
+
+        LOGGER.info("Sending the following message to {} exchange with {} routing key: {}",
+                Exchanges.SUBMISSIONS, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
     }
