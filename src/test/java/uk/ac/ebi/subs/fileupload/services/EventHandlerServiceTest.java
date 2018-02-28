@@ -3,6 +3,7 @@ package uk.ac.ebi.subs.fileupload.services;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,12 +42,15 @@ public class EventHandlerServiceTest {
 
     private EventHandlerService eventHandlerService;
 
+    @MockBean
+    private RabbitMessagingTemplate rabbitMessagingTemplate;
+
     @Before
     public void setup() {
         tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(JWT_TOKEN, SUBMISSION_ID, EXISTING_FILE_NAME);
         persistedFile = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
 
-        eventHandlerService = new DefaultEventHandlerService(validationService, fileRepository);
+        eventHandlerService = new DefaultEventHandlerService(validationService, fileRepository, rabbitMessagingTemplate);
     }
 
     @Test
