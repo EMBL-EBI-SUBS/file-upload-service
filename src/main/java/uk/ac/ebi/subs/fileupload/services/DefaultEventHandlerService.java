@@ -14,7 +14,6 @@ import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
 import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
 import uk.ac.ebi.subs.fileupload.util.FileStatus;
-import uk.ac.ebi.subs.messaging.Exchanges;
 
 @Service
 public class DefaultEventHandlerService implements EventHandlerService {
@@ -27,6 +26,7 @@ public class DefaultEventHandlerService implements EventHandlerService {
     private String sourcePath;
 
     private static final String EVENT_FILE_CHECKSUM_GENERATION = "file.checksum.generation";
+    private static final String SUBMISSION_EXCHANGE = "usi-1:submission-exchange";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultEventHandlerService.class);
 
@@ -98,9 +98,9 @@ public class DefaultEventHandlerService implements EventHandlerService {
         checksumGenerationMessage.setGeneratedTusId(file.getGeneratedTusId());
 
         LOGGER.info("Sending the following message to {} exchange with {} routing key: {}",
-                Exchanges.SUBMISSIONS, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
+                SUBMISSION_EXCHANGE, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
+        rabbitMessagingTemplate.convertAndSend(SUBMISSION_EXCHANGE, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
     }
 
     private File updateFileProperties(File newFile, File persistedFile) {

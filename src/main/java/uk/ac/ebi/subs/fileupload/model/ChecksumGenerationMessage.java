@@ -9,9 +9,6 @@ import lombok.ToString;
 @ToString
 public class ChecksumGenerationMessage {
 
-    public ChecksumGenerationMessage() {
-    }
-
     private String generatedTusId;
 
     public String getGeneratedTusId() {
