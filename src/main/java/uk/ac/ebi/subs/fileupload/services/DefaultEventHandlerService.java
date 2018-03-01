@@ -1,11 +1,15 @@
 package uk.ac.ebi.subs.fileupload.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
+import uk.ac.ebi.subs.fileupload.model.ChecksumGenerationMessage;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.repository.model.File;
 import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
@@ -16,13 +20,20 @@ public class DefaultEventHandlerService implements EventHandlerService {
 
     private ValidationService validationService;
     private FileRepository fileRepository;
+    private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Value("${file-upload.sourceBasePath}")
     private String sourcePath;
 
-    public DefaultEventHandlerService(ValidationService validationService, FileRepository fileRepository) {
+    private static final String EVENT_FILE_CHECKSUM_GENERATION = "file.checksum.generation";
+    private static final String SUBMISSION_EXCHANGE = "usi-1:submission-exchange";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultEventHandlerService.class);
+
+    public DefaultEventHandlerService(ValidationService validationService, FileRepository fileRepository, RabbitMessagingTemplate rabbitMessagingTemplate) {
         this.validationService = validationService;
         this.fileRepository = fileRepository;
+        this.rabbitMessagingTemplate = rabbitMessagingTemplate;
     }
 
     @Override
@@ -79,6 +90,17 @@ public class DefaultEventHandlerService implements EventHandlerService {
         fileRepository.save(fileToPersist);
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Override
+    public void executeChecksumCalculation(File file) {
+        ChecksumGenerationMessage checksumGenerationMessage = new ChecksumGenerationMessage();
+        checksumGenerationMessage.setGeneratedTusId(file.getGeneratedTusId());
+
+        LOGGER.info("Sending the following message to {} exchange with {} routing key: {}",
+                SUBMISSION_EXCHANGE, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
+
+        rabbitMessagingTemplate.convertAndSend(SUBMISSION_EXCHANGE, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
     }
 
     private File updateFileProperties(File newFile, File persistedFile) {

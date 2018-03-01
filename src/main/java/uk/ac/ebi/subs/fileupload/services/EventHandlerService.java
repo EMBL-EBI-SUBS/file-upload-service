@@ -16,4 +16,6 @@ public interface EventHandlerService {
     boolean isFileDuplicated(String fileName, String submissionUUID);
 
     boolean isEnoughDiskSpaceExists(long fileSize);
+
+    void executeChecksumCalculation(File file);
 }
