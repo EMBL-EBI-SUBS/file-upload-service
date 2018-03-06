@@ -2,7 +2,7 @@ package uk.ac.ebi.subs.fileupload.services;
 
 import org.springframework.http.ResponseEntity;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.repository.model.File;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
 
 /**
  * This class is responsible for handling the various events published by the tusd server.

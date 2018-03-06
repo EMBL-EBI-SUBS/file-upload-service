@@ -11,9 +11,9 @@ import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.ChecksumGenerationMessage;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.repository.model.File;
-import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
-import uk.ac.ebi.subs.fileupload.util.FileStatus;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
+import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
+import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 @Service
 public class DefaultEventHandlerService implements EventHandlerService {

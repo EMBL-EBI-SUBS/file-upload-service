@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.repository.model.File;
-import uk.ac.ebi.subs.fileupload.repository.util.FileHelper;
-import uk.ac.ebi.subs.fileupload.repository.util.JWTExtractor;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
-import uk.ac.ebi.subs.fileupload.util.FileStatus;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
+import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
+
+import java.util.UUID;
 
 /**
  * This class is handling the 'post-create' hook event that is coming from the tusd server.
@@ -27,6 +27,7 @@ public class PostCreateEvent implements TusEvent {
     @Override
     public ResponseEntity<Object> handle(TUSFileInfo tusFileInfo, EventHandlerService eventHandlerService) {
         File file = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
+        file.setId(UUID.randomUUID().toString());
         file.setStatus(FileStatus.INITIALIZED);
 
         JWTExtractor jwtExtractor = setupJWTExtractor(tusFileInfo.getMetadata().getJwtToken());

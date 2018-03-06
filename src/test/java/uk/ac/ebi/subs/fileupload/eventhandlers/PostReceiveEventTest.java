@@ -9,12 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.repository.model.File;
-import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
-import uk.ac.ebi.subs.fileupload.repository.util.FileHelper;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
-import uk.ac.ebi.subs.fileupload.util.FileStatus;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
+import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
+import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;

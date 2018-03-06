@@ -9,10 +9,9 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.repository.model.File;
-import uk.ac.ebi.subs.fileupload.repository.util.FileHelper;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
-import uk.ac.ebi.subs.fileupload.util.FileStatus;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
+import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
 
 import java.io.IOException;
 import java.nio.file.Files;
