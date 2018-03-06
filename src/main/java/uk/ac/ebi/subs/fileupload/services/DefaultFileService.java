@@ -1,9 +1,9 @@
 package uk.ac.ebi.subs.fileupload.services;
 
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.fileupload.repository.model.File;
-import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
-import uk.ac.ebi.subs.fileupload.util.FileStatus;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
+import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
+import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 import java.io.IOException;
 import java.nio.file.Files;

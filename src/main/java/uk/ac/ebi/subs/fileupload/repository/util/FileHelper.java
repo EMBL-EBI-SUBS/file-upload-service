@@ -1,7 +1,7 @@
 package uk.ac.ebi.subs.fileupload.repository.util;
 
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.repository.model.File;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
 
 /**
  * This class contains static helper method(s) related to the {@link File} entity.
