@@ -18,7 +18,9 @@ import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
@@ -66,6 +68,7 @@ public class PostCreateEventTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpStatus.OK)));
 
         assertThat(fileRepository.count(), is(1L));
+        assertTrue(persistedFile.getId().matches("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"));
         assertThat(persistedFile.getFilename(), is(equalTo(FILENAME)));
         assertThat(persistedFile.getCreatedBy(), is(equalTo(UPLOAD_USER)));
     }

@@ -9,6 +9,8 @@ import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
 
+import java.util.UUID;
+
 /**
  * This class is handling the 'post-create' hook event that is coming from the tusd server.
  * It is responsible to persist the information about the file to upload into the MongoDB database.
@@ -25,6 +27,7 @@ public class PostCreateEvent implements TusEvent {
     @Override
     public ResponseEntity<Object> handle(TUSFileInfo tusFileInfo, EventHandlerService eventHandlerService) {
         File file = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
+        file.setId(UUID.randomUUID().toString());
         file.setStatus(FileStatus.INITIALIZED);
 
         JWTExtractor jwtExtractor = setupJWTExtractor(tusFileInfo.getMetadata().getJwtToken());
