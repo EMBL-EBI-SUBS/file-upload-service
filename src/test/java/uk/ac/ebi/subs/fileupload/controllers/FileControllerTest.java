@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.repository.util.FileHelper;
+import uk.ac.ebi.subs.fileupload.eventhandlers.FileHelper;
 import uk.ac.ebi.subs.fileupload.services.FileService;
 import uk.ac.ebi.subs.fileupload.services.SubmissionService;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;

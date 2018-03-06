@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.fileupload.repository.util;
+package uk.ac.ebi.subs.fileupload.eventhandlers;
 
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
