@@ -1,6 +1,6 @@
 package uk.ac.ebi.subs.fileupload.services;
 
-import uk.ac.ebi.subs.fileupload.repository.model.File;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
 
 import java.io.IOException;
 

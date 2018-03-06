@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.fileupload;
+package uk.ac.ebi.subs;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

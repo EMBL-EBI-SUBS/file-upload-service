@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.fileupload.repository.util;
+package uk.ac.ebi.subs.fileupload.eventhandlers;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

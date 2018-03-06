@@ -17,10 +17,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
-import uk.ac.ebi.subs.fileupload.repository.repo.FileRepository;
 import uk.ac.ebi.subs.fileupload.services.ValidationService;
 import uk.ac.ebi.subs.fileupload.util.TUSEventType;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
+import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
