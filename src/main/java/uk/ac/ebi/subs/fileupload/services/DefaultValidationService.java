@@ -88,9 +88,12 @@ public class DefaultValidationService implements ValidationService {
         validationResult.setSubmissionId(file.getSubmissionId());
         validationResultRepository.save(validationResult);
 
-        file.setValidationResult(validationResult);
+        String tusId = file.getGeneratedTusId();
+        File persistedFile = fileRepository.findByGeneratedTusId(tusId);
 
-        fileRepository.save(file);
+        persistedFile.setValidationResult(validationResult);
+
+        fileRepository.save(persistedFile);
     }
 
     private void sendFileReferenceValidationEvent(uk.ac.ebi.subs.data.fileupload.File file) {
