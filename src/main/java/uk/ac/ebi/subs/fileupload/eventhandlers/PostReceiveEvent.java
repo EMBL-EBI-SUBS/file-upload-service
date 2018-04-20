@@ -9,6 +9,8 @@ import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 
+import java.time.LocalDateTime;
+
 
 /**
  * This class is handling the 'post-receive' hook event that is coming from the tusd server.
@@ -24,6 +26,7 @@ public class PostReceiveEvent implements TusEvent {
         File file = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
 
         file.setStatus(FileStatus.UPLOADING);
+        file.setUploadStartDate(LocalDateTime.now());
 
         LOGGER.info(String.format("File object: %s", file));
 

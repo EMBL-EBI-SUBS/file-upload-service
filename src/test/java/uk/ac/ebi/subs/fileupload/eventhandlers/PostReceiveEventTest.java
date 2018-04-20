@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -87,5 +88,6 @@ public class PostReceiveEventTest {
         assertThat(fileRepository.count(), is(1L));
         assertThat(modifiedFile.getUploadedSize(), is(equalTo(OFFSET_SIZE_1)));
         assertThat(modifiedFile.getStatus(), is(equalTo(FileStatus.UPLOADING)));
+        assertThat(modifiedFile.getUploadStartDate(), is(notNullValue()));
     }
 }
