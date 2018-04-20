@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.ChecksumGenerationMessage;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
-import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 @Service
@@ -101,6 +101,11 @@ public class DefaultEventHandlerService implements EventHandlerService {
                 SUBMISSION_EXCHANGE, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
 
         rabbitMessagingTemplate.convertAndSend(SUBMISSION_EXCHANGE, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
+    }
+
+    @Override
+    public void validateFileReference(File file) {
+        validationService.validateFileReference(file);
     }
 
     private File updateFileProperties(File newFile, File persistedFile) {

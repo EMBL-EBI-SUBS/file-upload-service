@@ -18,4 +18,6 @@ public interface EventHandlerService {
     boolean isEnoughDiskSpaceExists(long fileSize);
 
     void executeChecksumCalculation(File file);
+
+    void validateFileReference(File file);
 }
