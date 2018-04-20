@@ -27,8 +27,6 @@ public class ValidationServiceTest {
     private TUSFileInfo tusFileInfo;
 
     @MockBean
-    private TokenHandlerService tokenHandlerService;
-    @MockBean
     private SubmissionService submissionService;
     @MockBean
     private RabbitMessagingTemplate rabbitMessagingTemplate;
@@ -44,7 +42,7 @@ public class ValidationServiceTest {
     public void setup() {
         tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(JWT_TOKEN, SUBMISSION_ID, FILE_NAME);
 
-        validationService = new DefaultValidationService(tokenHandlerService, submissionService, rabbitMessagingTemplate,
+        validationService = new DefaultValidationService(submissionService, rabbitMessagingTemplate,
                 validationResultRepository, fileRepository);
     }
 

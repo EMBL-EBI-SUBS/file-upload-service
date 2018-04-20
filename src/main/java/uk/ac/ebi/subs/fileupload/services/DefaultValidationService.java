@@ -24,8 +24,6 @@ import java.util.UUID;
 public class DefaultValidationService implements ValidationService {
 
     @NonNull
-    private TokenHandlerService tokenHandlerService;
-    @NonNull
     private SubmissionService submissionService;
     @NonNull
     private RabbitMessagingTemplate rabbitMessagingTemplate;
@@ -38,8 +36,6 @@ public class DefaultValidationService implements ValidationService {
 
     @Override
     public ResponseEntity<Object> validateFileUploadRequest(String jwtToken, String submissionUuid) {
-
-        tokenHandlerService.validateToken(jwtToken);
 
         boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid, jwtToken);
 
