@@ -32,7 +32,7 @@ public class DefaultValidationService implements ValidationService {
     @NonNull
     private FileRepository fileRepository;
 
-    private static final String FILE_REF_VALIDATION_ROUTING_KEY = "file.reference.validation";
+    private static final String FILE_REF_VALIDATION_ROUTING_KEY = "usi.file.created";
 
     @Override
     public ResponseEntity<Object> validateFileUploadRequest(String jwtToken, String submissionUuid) {
