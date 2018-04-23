@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 
 /**
  * This class is handling the 'post-finish' hook event that is coming from the tusd server.
@@ -41,6 +42,7 @@ public class PostFinishEvent implements TusEvent {
         File file = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
 
         file.setStatus(FileStatus.UPLOADED);
+        file.setUploadFinishDate(LocalDateTime.now());
 
         LOGGER.debug(String.format("File object: %s", file));
 
