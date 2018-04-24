@@ -104,8 +104,8 @@ public class DefaultEventHandlerService implements EventHandlerService {
     }
 
     @Override
-    public void validateFileReference(File file) {
-        validationService.validateFileReference(file);
+    public void validateFileReference(String tusId) {
+        validationService.validateFileReference(tusId);
     }
 
     private File updateFileProperties(File newFile, File persistedFile) {

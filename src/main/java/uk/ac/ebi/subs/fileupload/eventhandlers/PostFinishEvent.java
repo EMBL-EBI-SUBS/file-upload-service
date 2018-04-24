@@ -51,7 +51,7 @@ public class PostFinishEvent implements TusEvent {
         if (response.getStatusCode().equals(HttpStatus.OK)) {
             response = moveFile(file, eventHandlerService);
             eventHandlerService.executeChecksumCalculation(file);
-            eventHandlerService.validateFileReference(file);
+            eventHandlerService.validateFileReference(file.getGeneratedTusId());
         }
 
         return response;

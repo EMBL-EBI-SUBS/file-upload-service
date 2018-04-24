@@ -21,5 +21,5 @@ public interface ValidationService {
 
     ResponseEntity<Object> validateMetadata(TUSFileInfo.MetaData fileMetadata);
 
-    void validateFileReference(File file);
+    void validateFileReference(String tusId);
 }

@@ -19,5 +19,5 @@ public interface EventHandlerService {
 
     void executeChecksumCalculation(File file);
 
-    void validateFileReference(File file);
+    void validateFileReference(String tusId);
 }
