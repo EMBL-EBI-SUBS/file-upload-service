@@ -71,9 +71,10 @@ public class DefaultValidationService implements ValidationService {
     }
 
     @Override
-    public void validateFileReference(File file) {
-        createValidationResult(file);
-        sendFileReferenceValidationEvent(file);
+    public void validateFileReference(String tusId) {
+        File persistedFile = fileRepository.findByGeneratedTusId(tusId);
+        createValidationResult(persistedFile);
+        sendFileReferenceValidationEvent(persistedFile);
     }
 
     private void createValidationResult(File file) {
