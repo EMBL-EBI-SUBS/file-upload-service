@@ -113,8 +113,12 @@ public class DefaultEventHandlerService implements EventHandlerService {
         persistedFile.setUploadedSize(newFile.getUploadedSize());
         persistedFile.setUploadPath(newFile.getUploadPath());
         persistedFile.setTargetPath(newFile.getTargetPath());
-        persistedFile.setUploadStartDate(newFile.getUploadStartDate());
-        persistedFile.setUploadFinishDate(newFile.getUploadFinishDate());
+        if (persistedFile.getUploadStartDate() == null) {
+            persistedFile.setUploadStartDate(newFile.getUploadStartDate());
+        }
+        if (persistedFile.getUploadFinishDate() == null) {
+            persistedFile.setUploadFinishDate(newFile.getUploadFinishDate());
+        }
 
         return persistedFile;
     }
