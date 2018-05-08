@@ -45,10 +45,10 @@ public class FileDeletionListener {
             throw new IllegalArgumentException(SUBMISSION_ID_CANT_BE_NULL);
         }
 
-        ValidationMessageByFileDeletion validationMessageByFileDeletion = new ValidationMessageByFileDeletion();
-        validationMessageByFileDeletion.setSubmissionId(submissionId);
+        FileDeletedMessage fileDeletedMessage = new FileDeletedMessage();
+        fileDeletedMessage.setSubmissionId(submissionId);
 
         LOGGER.debug("Sending assay data to file reference validation queue");
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, EVENT_ASSAYDATA_FILEREF_VALIDATION_BY_FILE_DELETION, validationMessageByFileDeletion);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, EVENT_ASSAYDATA_FILEREF_VALIDATION_BY_FILE_DELETION, fileDeletedMessage);
     }
 }
