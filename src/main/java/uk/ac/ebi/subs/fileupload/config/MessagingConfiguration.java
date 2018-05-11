@@ -24,7 +24,7 @@ import uk.ac.ebi.subs.messaging.Queues;
 public class MessagingConfiguration {
 
     public static final String USI_FILE_DELETION_QUEUE = "usi-file-deletion";
-    private static final String EVENT_FILE_DELETION = "usi.file.deletion";
+    private static final String EVENT_FILE_DELETION = "file.deleted";
 
     @Bean
     public MessageConverter messageConverter() {
