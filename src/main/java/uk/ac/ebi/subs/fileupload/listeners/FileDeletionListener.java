@@ -25,7 +25,7 @@ public class FileDeletionListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionListener.class);
 
-    private static final String EVENT_ASSAYDATA_FILEREF_VALIDATION_BY_FILE_DELETION = "file.deleted";
+    private static final String EVENT_ASSAYDATA_FILEREF_VALIDATION_BY_FILE_DELETION = "file.deleted.validation";
     private static final String SUBMISSION_ID_CANT_BE_NULL = "Submission ID can not be null";
 
     @RabbitListener(queues = MessagingConfiguration.USI_FILE_DELETION_QUEUE)
