@@ -72,7 +72,7 @@ publish {
 }
 
 remotes {
-    devFUSHX {
+    devFUSHH {
         role('dev')
         host = project.hasProperty(project.name + "DevHHDeployTarget") ? getProperty(project.name + "DevHHDeployTarget") : 'localhost'
     }
