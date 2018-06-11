@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.1.RELEASE'
+		springBootVersion = '1.5.2.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -23,7 +23,7 @@ apply plugin: 'application'
 apply plugin: 'org.hidetake.ssh'
 
 group = 'uk.ac.ebi.subs'
-version = '0.1.5-SNAPSHOT'
+version = '0.5.4-SNAPSHOT'
 sourceCompatibility = 1.8
 
 mainClassName = "uk.ac.ebi.subs.FileUploadServiceApplication"
@@ -38,7 +38,8 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
 
-    compile('uk.ac.ebi.subs:subs-repository:1.10.2-SNAPSHOT')
+    compile('uk.ac.ebi.subs:subs-repository:2.4.0-SNAPSHOT') {changing = true}
+	compile('uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT')
 
     compile('org.bitbucket.b_c:jose4j:0.5.2')
 	compile("org.springframework.boot:spring-boot-starter-actuator")
@@ -71,9 +72,9 @@ publish {
 }
 
 remotes {
-    devFUSHX {
+    devFUSHH {
         role('dev')
-        host = project.hasProperty(project.name + "DevHXDeployTarget") ? getProperty(project.name + "DevHXDeployTarget") : 'localhost'
+        host = project.hasProperty(project.name + "DevHHDeployTarget") ? getProperty(project.name + "DevHHDeployTarget") : 'localhost'
     }
     testFUSHH1 {
         role('test')
@@ -133,7 +134,7 @@ private Object sshRun() {
 			def jarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
 			File jarDeployFile = new File("/homes/sub_adm/tc_subs/$project.name/$remote.name/jar",jarFileName)
 			File jarDeployDir = jarDeployFile.getParentFile()
-			println "Uploading jar $jar.archivePath.name to $jarDeployFile.absolutePath  area on $remote"
+			println "Uploading jar $jar.archivePath.name to $jarDeployFile.absolutePath area on $remote"
 			put(jar.archivePath.absolutePath, jarDeployFile.absolutePath)
 			println "creating symbolic link to $jar.archiveName"
 			def result = execute "ln -s -f $jarDeployFile.absolutePath $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true

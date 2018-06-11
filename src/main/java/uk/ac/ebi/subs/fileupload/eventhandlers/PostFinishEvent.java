@@ -6,17 +6,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
-import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 
 /**
  * This class is handling the 'post-finish' hook event that is coming from the tusd server.
@@ -41,6 +42,7 @@ public class PostFinishEvent implements TusEvent {
         File file = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
 
         file.setStatus(FileStatus.UPLOADED);
+        file.setUploadFinishDate(LocalDateTime.now());
 
         LOGGER.debug(String.format("File object: %s", file));
 
@@ -48,6 +50,7 @@ public class PostFinishEvent implements TusEvent {
 
         if (response.getStatusCode().equals(HttpStatus.OK)) {
             response = moveFile(file, eventHandlerService);
+            eventHandlerService.validateFileReference(file.getGeneratedTusId());
             eventHandlerService.executeChecksumCalculation(file);
         }
 

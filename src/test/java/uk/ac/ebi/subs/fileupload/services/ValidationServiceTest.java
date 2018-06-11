@@ -3,12 +3,15 @@ package uk.ac.ebi.subs.fileupload.services;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
+import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -24,10 +27,14 @@ public class ValidationServiceTest {
     private TUSFileInfo tusFileInfo;
 
     @MockBean
-    private TokenHandlerService tokenHandlerService;
-
-    @MockBean
     private SubmissionService submissionService;
+    @MockBean
+    private RabbitMessagingTemplate rabbitMessagingTemplate;
+    @MockBean
+    private ValidationResultRepository validationResultRepository;
+    @MockBean
+    private FileRepository fileRepository;
+
 
     private ValidationService validationService;
 
@@ -35,7 +42,8 @@ public class ValidationServiceTest {
     public void setup() {
         tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(JWT_TOKEN, SUBMISSION_ID, FILE_NAME);
 
-        validationService = new DefaultValidationService(tokenHandlerService, submissionService);
+        validationService = new DefaultValidationService(submissionService, rabbitMessagingTemplate,
+                validationResultRepository, fileRepository);
     }
 
     @Test

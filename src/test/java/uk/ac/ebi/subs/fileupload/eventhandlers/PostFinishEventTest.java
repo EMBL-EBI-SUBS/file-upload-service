@@ -13,11 +13,11 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
-import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 import java.io.IOException;
@@ -30,6 +30,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -169,6 +170,7 @@ public class PostFinishEventTest {
         assertThat(fileRepository.count(), is(1L));
         assertThat(finishedFile.getUploadedSize(), is(equalTo(TOTAL_SIZE)));
         assertThat(finishedFile.getStatus(), is(equalTo(FileStatus.READY_FOR_CHECKSUM)));
+        assertThat(finishedFile.getUploadFinishDate(), is(notNullValue()));
 
         assertThat(finishedFile.getUploadPath(), is(TARGET_FOLDER + FILE_SEPARATOR + READY_TO_AGENT_FILE));
         assertThat(finishedFile.getTargetPath(), is(TARGET_FOLDER+ FILE_SEPARATOR + READY_TO_AGENT_FILE));

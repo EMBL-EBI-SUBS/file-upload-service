@@ -1,5 +1,8 @@
 package uk.ac.ebi.subs.fileupload.services;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -7,22 +10,32 @@ import org.springframework.util.StringUtils;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
+import uk.ac.ebi.subs.messaging.Exchanges;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
+import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+import uk.ac.ebi.subs.validator.data.FileUploadValidationEnvelopeToCoordinator;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
+
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class DefaultValidationService implements ValidationService {
 
-    private TokenHandlerService tokenHandlerService;
+    @NonNull
     private SubmissionService submissionService;
+    @NonNull
+    private RabbitMessagingTemplate rabbitMessagingTemplate;
+    @NonNull
+    private ValidationResultRepository validationResultRepository;
+    @NonNull
+    private FileRepository fileRepository;
 
-    public DefaultValidationService(TokenHandlerService tokenHandlerService, SubmissionService submissionService) {
-        this.tokenHandlerService = tokenHandlerService;
-        this.submissionService = submissionService;
-    }
+    private static final String FILE_REF_VALIDATION_ROUTING_KEY = "usi.file.created";
 
     @Override
     public ResponseEntity<Object> validateFileUploadRequest(String jwtToken, String submissionUuid) {
-
-        tokenHandlerService.validateToken(jwtToken);
 
         boolean isSubmissionModifiable = submissionService.isModifiable(submissionUuid, jwtToken);
 
@@ -55,5 +68,35 @@ public class DefaultValidationService implements ValidationService {
         }
 
         return response;
+    }
+
+    @Override
+    public void validateFileReference(String tusId) {
+        File persistedFile = fileRepository.findByGeneratedTusId(tusId);
+        createValidationResult(persistedFile);
+        sendFileReferenceValidationEvent(persistedFile);
+    }
+
+    private void createValidationResult(File file) {
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.setEntityUuid(file.getId());
+        validationResult.setUuid(UUID.randomUUID().toString());
+
+        validationResult.setSubmissionId(file.getSubmissionId());
+        validationResultRepository.save(validationResult);
+
+        String tusId = file.getGeneratedTusId();
+        File persistedFile = fileRepository.findByGeneratedTusId(tusId);
+
+        persistedFile.setValidationResult(validationResult);
+
+        fileRepository.save(persistedFile);
+    }
+
+    private void sendFileReferenceValidationEvent(uk.ac.ebi.subs.data.fileupload.File file) {
+        FileUploadValidationEnvelopeToCoordinator validationEnvelope =
+                new FileUploadValidationEnvelopeToCoordinator(file.getSubmissionId(), file);
+
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, FILE_REF_VALIDATION_ROUTING_KEY, validationEnvelope);
     }
 }

@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.fileupload.services;
 
 import org.springframework.http.ResponseEntity;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
 
 /**
  * This class is responsible for validating the requests sent by the tusd server.
@@ -19,4 +20,6 @@ public interface ValidationService {
     ResponseEntity<Object> validateFileUploadRequest(String jwt, String submissionUuid);
 
     ResponseEntity<Object> validateMetadata(TUSFileInfo.MetaData fileMetadata);
+
+    void validateFileReference(String tusId);
 }
