@@ -110,9 +110,11 @@ if (project.hasProperty('sshPassphrase')) {
 	ssh.settings.passphrase = sshPassphrase
 }
 
-task deployJar(type: SshTask, dependsOn: 'build') {
+task deployJar(type: SshTask, dependsOn: 'assemble') {
 	doLast {
-		sshRun()
+		def uploadJarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
+		File jarDeployDir = new File("/data/$gradle_env/$project.name/jar",uploadJarFileName)
+		sshRun(jarDeployDir)
 	}
 	ssh.settings {
 		knownHosts = allowAnyHosts
@@ -128,13 +130,13 @@ task testSsh(type: SshTask) {
 	}
 }
 
-private Object sshRun() {
+private Object sshRun(File jarDeployFile) {
+	def uploadJarFileName = name + "-"  + version + "." + System.currentTimeMillis() + ".jar"
+	File jarDeployDir = jarDeployFile.getParentFile()
 	ssh.run {
 		session(remotes.role(gradle_env)) {
-			def jarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
-			File jarDeployFile = new File("/homes/sub_adm/tc_subs/$project.name/$remote.name/jar",jarFileName)
-			File jarDeployDir = jarDeployFile.getParentFile()
-			println "Uploading jar $jar.archivePath.name to $jarDeployFile.absolutePath area on $remote"
+			execute "/homes/sub_adm/create_dirs.sh $gradle_env $project.name", ignoreError: false
+			println "Uploading jar $jar.archivePath.name to $jarDeployDir/$uploadJarFileName  area on $remote"
 			put(jar.archivePath.absolutePath, jarDeployFile.absolutePath)
 			println "creating symbolic link to $jar.archiveName"
 			def result = execute "ln -s -f $jarDeployFile.absolutePath $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
