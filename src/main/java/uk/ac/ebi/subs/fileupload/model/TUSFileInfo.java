@@ -50,6 +50,7 @@ public class TUSFileInfo {
         private long id;
 
         @NotNull
+        @JsonProperty(value = "name")
         private String filename;
 
         @NotNull
