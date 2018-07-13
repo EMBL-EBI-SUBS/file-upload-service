@@ -15,7 +15,6 @@ public class FileHelper {
         file.setFilename(tusFileInfo.getMetadata().getFilename());
         file.setTotalSize(tusFileInfo.getSize());
         file.setUploadedSize(tusFileInfo.getOffsetValue());
-        file.setTargetPath("/path/to/the/file/" + tusFileInfo.getMetadata().getFilename());
 
         return file;
     }

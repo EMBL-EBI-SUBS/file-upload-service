@@ -134,7 +134,8 @@ public class PostFinishEventTest {
         tusFileInfo.setOffsetValue(TOTAL_SIZE);
 
         // mock the moveFile method to check the initial status change
-        doReturn(new ResponseEntity<>(HttpStatus.OK)).when(postFinishEvent).moveFile(any(File.class), Mockito.eq(eventHandlerService));
+        doReturn(new ResponseEntity<>(HttpStatus.OK)).when(postFinishEvent)
+                .moveFile(any(File.class), Mockito.eq(eventHandlerService), any(String.class), any(String.class));
 
         ResponseEntity<Object> response = postFinishEvent.handle(tusFileInfo, eventHandlerService);
 
