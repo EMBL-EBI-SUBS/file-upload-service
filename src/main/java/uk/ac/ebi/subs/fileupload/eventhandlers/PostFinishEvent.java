@@ -49,26 +49,26 @@ public class PostFinishEvent implements TusEvent {
         ResponseEntity<Object> response =  eventHandlerService.persistOrUpdateFileInformation(file);
 
         if (response.getStatusCode().equals(HttpStatus.OK)) {
-            response = moveFile(file, eventHandlerService);
-            eventHandlerService.validateFileReference(file.getGeneratedTusId());
+            String sourceFileName = file.getGeneratedTusId() + BIN_FILE_EXTENSION_BY_TUS;
+            String fullSourcePath = assembleFullSourcePath(sourceFileName);
+            String targetPath = generateFolderName(file.getSubmissionId());
+            String fullTargetPath = assembleFullTargetPath(targetBasePath, targetPath);
+
+            setFilePpropertiesBeforeMoveFile(file, fullSourcePath, fullTargetPath, eventHandlerService);
+
+            response = moveFile(file, eventHandlerService, fullSourcePath, fullTargetPath);
+            file = eventHandlerService.validateFileReference(file.getGeneratedTusId());
             eventHandlerService.executeChecksumCalculation(file);
+            eventHandlerService.executeFileContentValidation(file);
         }
 
         return response;
     }
 
-    ResponseEntity<Object> moveFile(File file, EventHandlerService eventHandlerService) {
+    ResponseEntity<Object> moveFile(File file, EventHandlerService eventHandlerService, String fullSourcePath, String fullTargetPath) {
         ResponseEntity<Object> response;
         try {
-            String sourceFileName = file.getGeneratedTusId() + BIN_FILE_EXTENSION_BY_TUS;
-            String fullSourcePath = assembleFullSourcePath(sourceFileName);
-            String targetPath = generateFolderName(file.getSubmissionId());
-            String targetFilename = file.getFilename();
-            String fullTargetPath = assembleFullTargetPath(targetBasePath, targetPath);
-
-            setFilePpropertiesBeforeMoveFile(file, fullSourcePath, fullTargetPath, eventHandlerService);
-
-            moveFile(targetFilename, fullSourcePath, fullTargetPath);
+            moveFile(file.getFilename(), fullSourcePath, fullTargetPath);
             deleteInfoFile(fullSourcePath);
 
             response = setFilePpropertiesAfterMoveFile(file, fullTargetPath, eventHandlerService);

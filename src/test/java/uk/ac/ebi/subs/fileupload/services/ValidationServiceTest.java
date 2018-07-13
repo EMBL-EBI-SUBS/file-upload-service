@@ -42,7 +42,7 @@ public class ValidationServiceTest {
     public void setup() {
         tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(JWT_TOKEN, SUBMISSION_ID, FILE_NAME);
 
-        validationService = new DefaultValidationService(submissionService, rabbitMessagingTemplate,
+        validationService = new ValidationService(submissionService, rabbitMessagingTemplate,
                 validationResultRepository, fileRepository);
     }
 
