@@ -79,10 +79,12 @@ public class ValidationService {
         return response;
     }
 
-    public void validateFileReference(String tusId) {
+    public File validateFileReference(String tusId) {
         File persistedFile = fileRepository.findByGeneratedTusId(tusId);
         createValidationResult(persistedFile);
         sendFileReferenceValidationEvent(persistedFile);
+
+        return persistedFile;
     }
 
     private void createValidationResult(File file) {
@@ -93,12 +95,9 @@ public class ValidationService {
         validationResult.setSubmissionId(file.getSubmissionId());
         validationResultRepository.save(validationResult);
 
-        String tusId = file.getGeneratedTusId();
-        File persistedFile = fileRepository.findByGeneratedTusId(tusId);
+        file.setValidationResult(validationResult);
 
-        persistedFile.setValidationResult(validationResult);
-
-        fileRepository.save(persistedFile);
+        fileRepository.save(file);
     }
 
     private void sendFileReferenceValidationEvent(uk.ac.ebi.subs.data.fileupload.File file) {

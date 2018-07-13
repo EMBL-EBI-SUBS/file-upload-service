@@ -19,6 +19,8 @@ import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -27,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -45,7 +48,7 @@ public class PostFinishEventTest {
     private TUSFileInfo tusFileInfo;
     private static final String JWT_TOKEN = "some.jwt.token";
     private static final String SUBMISSION_ID = "submission_1234";
-    private static final String FILENAME = "test_file.cram";
+    private static final String FILENAME = "test_file.fastq.gz";
     private static final String TUS_ID = "abcdefgh12345678";
 
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
@@ -70,6 +73,9 @@ public class PostFinishEventTest {
     @Autowired
     private FileRepository fileRepository;
 
+    @Autowired
+    private ValidationResultRepository validationResultRepository;
+
     private File fileToPersist;
 
     @SpyBean
@@ -86,6 +92,8 @@ public class PostFinishEventTest {
 
         fileToPersist = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
         fileToPersist.setStatus(FileStatus.UPLOADING);
+
+        fileToPersist.setValidationResult(createValidationResult(fileToPersist));
 
         fileRepository.save(fileToPersist);
 
@@ -181,5 +189,16 @@ public class PostFinishEventTest {
         List<String> lines = Arrays.asList("This is a TEST file.", "This is the second line.");
         Path file = Paths.get(TEST_FILE_TO_UPLOAD);
         Files.write(file, lines, Charset.forName("UTF-8"));
+    }
+
+    private ValidationResult createValidationResult(File file) {
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.setEntityUuid(file.getId());
+        validationResult.setUuid(UUID.randomUUID().toString());
+
+        validationResult.setSubmissionId(file.getSubmissionId());
+        validationResultRepository.save(validationResult);
+
+        return validationResult;
     }
 }

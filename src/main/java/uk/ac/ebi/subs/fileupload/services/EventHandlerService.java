@@ -104,8 +104,27 @@ public class EventHandlerService {
         rabbitMessagingTemplate.convertAndSend(SUBMISSION_EXCHANGE, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
     }
 
-    public void validateFileReference(String tusId) {
-        validationService.validateFileReference(tusId);
+    public void executeFileContentValidation(File file) {
+        final String fileTargetPath = file.getTargetPath();
+        String fileType = FileType.getFileTypeByExtension(fileTargetPath);
+        if (fileType != null) {
+            FileContentValidationMessage fileContentValidationMessage = new FileContentValidationMessage();
+            fileContentValidationMessage.setFileUUID(file.getId());
+            fileContentValidationMessage.setFilePath(fileTargetPath);
+            fileContentValidationMessage.setFileType(fileType);
+            fileContentValidationMessage.setValidationResultUUID(file.getValidationResult().getUuid());
+
+            LOGGER.info("Sending the following message to {} exchange with {} routing key: {}",
+                    SUBMISSION_EXCHANGE, EVENT_FILE_CONTENT_VALIDATION, fileContentValidationMessage);
+
+            rabbitMessagingTemplate.convertAndSend(SUBMISSION_EXCHANGE, EVENT_FILE_CONTENT_VALIDATION, fileContentValidationMessage);
+        } else {
+            LOGGER.info("The uploaded file: {} is not supported for file content validation", fileTargetPath);
+        }
+    }
+
+    public File validateFileReference(String tusId) {
+        return validationService.validateFileReference(tusId);
     }
 
     private File updateFileProperties(File newFile, File persistedFile) {
