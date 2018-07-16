@@ -9,5 +9,5 @@ public class FileContentValidationMessage {
     private String fileType;
     private String filePath;
     private String validationResultUUID;
-    private String validationResultVersion;
+    private int validationResultVersion;
 }
