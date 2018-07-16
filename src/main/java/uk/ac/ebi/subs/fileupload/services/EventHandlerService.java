@@ -113,7 +113,7 @@ public class EventHandlerService {
             fileContentValidationMessage.setFilePath(fileTargetPath);
             fileContentValidationMessage.setFileType(fileType);
             fileContentValidationMessage.setValidationResultUUID(file.getValidationResult().getUuid());
-            fileContentValidationMessage.setValidationResultUUID(String.valueOf(file.getValidationResult().getVersion()));
+            fileContentValidationMessage.setValidationResultVersion(file.getValidationResult().getVersion());
 
             LOGGER.info("Sending the following message to {} exchange with {} routing key: {}",
                     SUBMISSION_EXCHANGE, EVENT_FILE_CONTENT_VALIDATION, fileContentValidationMessage);
