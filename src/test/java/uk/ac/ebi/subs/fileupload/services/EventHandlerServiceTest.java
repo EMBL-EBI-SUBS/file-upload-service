@@ -50,7 +50,7 @@ public class EventHandlerServiceTest {
         tusFileInfo = TusFileInfoHelper.generateTUSFileInfo(JWT_TOKEN, SUBMISSION_ID, EXISTING_FILE_NAME);
         persistedFile = FileHelper.convertTUSFileInfoToFile(tusFileInfo);
 
-        eventHandlerService = new DefaultEventHandlerService(validationService, fileRepository, rabbitMessagingTemplate);
+        eventHandlerService = new EventHandlerService(validationService, fileRepository, rabbitMessagingTemplate);
     }
 
     @Test
