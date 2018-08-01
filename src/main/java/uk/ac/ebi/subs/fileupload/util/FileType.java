@@ -12,6 +12,8 @@ public class FileType {
         extensionToType.put("fq.gz", "FASTQ");
         extensionToType.put("vcf", "VCF");
         extensionToType.put("vcf.gz", "VCF");
+        extensionToType.put("bam", "BAM");
+        extensionToType.put("cram", "CRAM");
     }
 
     public static String getFileTypeByExtension(String filename) {
