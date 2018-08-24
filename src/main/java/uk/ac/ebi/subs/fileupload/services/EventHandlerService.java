@@ -76,6 +76,16 @@ public class EventHandlerService {
         return usableSpace > fileSize;
     }
 
+    public boolean isFileExists(String tusID) {
+        return fileRepository.findByGeneratedTusId(tusID) != null;
+    }
+
+    public void deleteFile(String tusID) {
+        if (isFileExists(tusID)) {
+            fileRepository.delete(fileRepository.findByGeneratedTusId(tusID));
+        }
+    }
+
     public ResponseEntity<Object> persistOrUpdateFileInformation(File file) {
         File fileToPersist = file;
 
