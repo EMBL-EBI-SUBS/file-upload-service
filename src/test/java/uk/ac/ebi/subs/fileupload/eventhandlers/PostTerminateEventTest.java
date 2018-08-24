@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -20,6 +21,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -32,7 +35,7 @@ public class PostTerminateEventTest {
 
     private static final long OFFSET_SIZE_1 = 1000L;
 
-    @Autowired
+    @SpyBean
     private EventHandlerService eventHandlerService;
 
     @Autowired
@@ -70,6 +73,8 @@ public class PostTerminateEventTest {
 
     @Test
     public void whenReceivingAPostTerminateEvent_ItShouldReturnHTTPStatusAcceptedAndFileDocumentShouldBeDeleted() {
+        doNothing().when(eventHandlerService).deleteFileFromStorage(any(String.class), any(String.class));
+
         assertThat(fileRepository.count(), is(1L));
 
         File fileUnderUpload = fileRepository.findByFilenameAndSubmissionId(FILENAME, SUBMISSION_ID);

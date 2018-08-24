@@ -10,12 +10,20 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
+import uk.ac.ebi.subs.fileupload.errors.FileDeletionException;
+import uk.ac.ebi.subs.fileupload.listeners.FileDeletedMessage;
 import uk.ac.ebi.subs.fileupload.model.ChecksumGenerationMessage;
 import uk.ac.ebi.subs.fileupload.model.FileContentValidationMessage;
+import uk.ac.ebi.subs.fileupload.model.FileDeleteMessage;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.util.FileType;
+import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * This class is responsible for handling the various events published by the tusd server.
@@ -33,6 +41,9 @@ public class EventHandlerService {
     private static final String EVENT_FILE_CHECKSUM_GENERATION = "file.checksum.generation";
     private static final String EVENT_FILE_CONTENT_VALIDATION = "file.content.validation";
     private static final String SUBMISSION_EXCHANGE = "usi-1:submission-exchange";
+
+    private static final String EVENT_ASSAYDATA_FILEREF_VALIDATION_BY_FILE_DELETION = "file.deleted.validation";
+    private static final String SUBMISSION_ID_CANT_BE_NULL = "Submission ID can not be null.";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventHandlerService.class);
 
@@ -80,10 +91,35 @@ public class EventHandlerService {
         return fileRepository.findByGeneratedTusId(tusID) != null;
     }
 
-    public void deleteFile(String tusID) {
+    public File getFileByTusID(String tusID) {
+        return fileRepository.findByGeneratedTusId(tusID);
+    }
+
+    public void deleteFileFromDB(String tusID) {
         if (isFileExists(tusID)) {
             fileRepository.delete(fileRepository.findByGeneratedTusId(tusID));
         }
+    }
+
+    public void deleteFileFromStorage(String filePathForDeletion, String submissionID) {
+        try {
+            Files.deleteIfExists(Paths.get(filePathForDeletion));
+            notifyFileReferenceValidatorOfFileDeletion(submissionID);
+        } catch (IOException e) {
+            throw new FileDeletionException(filePathForDeletion);
+        }
+    }
+
+    private void notifyFileReferenceValidatorOfFileDeletion(String submissionId) {
+        if (submissionId == null) {
+            throw new IllegalArgumentException(SUBMISSION_ID_CANT_BE_NULL);
+        }
+
+        FileDeletedMessage fileDeletedMessage = new FileDeletedMessage();
+        fileDeletedMessage.setSubmissionId(submissionId);
+
+        LOGGER.debug("Sending assay data to file reference validation queue");
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, EVENT_ASSAYDATA_FILEREF_VALIDATION_BY_FILE_DELETION, fileDeletedMessage);
     }
 
     public ResponseEntity<Object> persistOrUpdateFileInformation(File file) {
