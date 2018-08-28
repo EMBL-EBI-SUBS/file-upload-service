@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.fileupload.config.MessagingConfiguration;
 import uk.ac.ebi.subs.fileupload.errors.FileDeletionException;
 import uk.ac.ebi.subs.fileupload.model.FileDeleteMessage;
+import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 import uk.ac.ebi.subs.messaging.Exchanges;
 
 import java.io.IOException;
@@ -21,34 +22,16 @@ import java.nio.file.Paths;
 public class FileDeletionListener {
 
     @NonNull
-    private RabbitMessagingTemplate rabbitMessagingTemplate;
+    private EventHandlerService eventHandlerService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionListener.class);
-
-    private static final String EVENT_ASSAYDATA_FILEREF_VALIDATION_BY_FILE_DELETION = "file.deleted.validation";
-    private static final String SUBMISSION_ID_CANT_BE_NULL = "Submission ID can not be null";
 
     @RabbitListener(queues = MessagingConfiguration.USI_FILE_DELETION_QUEUE)
     public void deleteFileFromStorage(FileDeleteMessage fileDeleteMessage) {
         String filePathForDeletion = fileDeleteMessage.getTargetFilePath();
 
-        try {
-            Files.deleteIfExists(Paths.get(filePathForDeletion));
-            notifyFileReferenceValidatorOfFileDeletion(fileDeleteMessage.getSubmissionId());
-        } catch (IOException e) {
-            throw new FileDeletionException(filePathForDeletion);
-        }
-    }
+        LOGGER.debug("Delete file: {} from the storage.", filePathForDeletion);
 
-    private void notifyFileReferenceValidatorOfFileDeletion(String submissionId) {
-        if (submissionId == null) {
-            throw new IllegalArgumentException(SUBMISSION_ID_CANT_BE_NULL);
-        }
-
-        FileDeletedMessage fileDeletedMessage = new FileDeletedMessage();
-        fileDeletedMessage.setSubmissionId(submissionId);
-
-        LOGGER.debug("Sending assay data to file reference validation queue");
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, EVENT_ASSAYDATA_FILEREF_VALIDATION_BY_FILE_DELETION, fileDeletedMessage);
+        eventHandlerService.deleteFileFromStorage(filePathForDeletion, fileDeleteMessage.getSubmissionId());
     }
 }
