@@ -26,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ValidationService {
 
+    private static final String FILES_DATA_TYPE_ID = "files";
     @NonNull
     private SubmissionService submissionService;
     @NonNull
@@ -90,6 +91,7 @@ public class ValidationService {
     private void createValidationResult(File file) {
         ValidationResult validationResult = new ValidationResult();
         validationResult.setEntityUuid(file.getId());
+        validationResult.setDataTypeId(FILES_DATA_TYPE_ID);
         validationResult.setUuid(UUID.randomUUID().toString());
 
         validationResult.setSubmissionId(file.getSubmissionId());
