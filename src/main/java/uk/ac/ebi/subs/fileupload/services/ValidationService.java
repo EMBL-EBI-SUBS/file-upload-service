@@ -26,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ValidationService {
 
+    private static final String FILES_DATA_TYPE_ID = "files";
     @NonNull
     private SubmissionService submissionService;
     @NonNull
