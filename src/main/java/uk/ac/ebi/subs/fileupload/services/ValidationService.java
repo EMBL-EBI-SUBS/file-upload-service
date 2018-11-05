@@ -37,6 +37,8 @@ public class ValidationService {
 
     private static final String FILE_REF_VALIDATION_ROUTING_KEY = "usi.file.created";
 
+    private static final String FILES_DATA_TYPE_ID = "files";
+
     /**
      * Check the validity of the file upload request.
      * First validate if the JWT token is valid, then check if the given submission exists and modifiable.
@@ -90,6 +92,7 @@ public class ValidationService {
     private void createValidationResult(File file) {
         ValidationResult validationResult = new ValidationResult();
         validationResult.setEntityUuid(file.getId());
+        validationResult.setDataTypeId(FILES_DATA_TYPE_ID);
         validationResult.setUuid(UUID.randomUUID().toString());
 
         validationResult.setSubmissionId(file.getSubmissionId());
