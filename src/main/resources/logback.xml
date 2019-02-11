@@ -23,6 +23,16 @@
         </encoder>
     </appender>
 
+    <appender name="GELF" class="de.siegmar.logbackgelf.GelfUdpAppender">
+        <graylogHost>biosamples-ops</graylogHost>
+        <graylogPort>12201</graylogPort>
+        <layout class="de.siegmar.logbackgelf.GelfLayout">
+            <staticField>application:${SPRING_APP}</staticField>
+            <staticField>project:USI</staticField>
+            <staticField>environment:${SPRING_PROFILE}</staticField>
+        </layout>
+    </appender>
+
     <logger name="log4j.logger.org.springframework.security" level="INFO"/>
     <logger name="org.springframework.security" level="INFO"/>
 
@@ -30,5 +40,6 @@
         <level value="INFO" />
         <appender-ref ref="stdout" />
         <appender-ref ref="ROLLING" />
+        <appender-ref ref="GELF"/>
     </root>
 </configuration>
