@@ -24,8 +24,8 @@
     </appender>
 
     <appender name="GELF" class="de.siegmar.logbackgelf.GelfUdpAppender">
-        <graylogHost>biosamples-ops</graylogHost>
-        <graylogPort>12201</graylogPort>
+        <graylogHost>${GRAYLOG_HOST}</graylogHost>
+        <graylogPort>${GRAYLOG_PORT}</graylogPort>
         <layout class="de.siegmar.logbackgelf.GelfLayout">
             <staticField>application:${SPRING_APP}</staticField>
             <staticField>project:USI</staticField>
