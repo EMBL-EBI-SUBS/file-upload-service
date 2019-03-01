@@ -8,3 +8,14 @@ file-upload:
     certificatePath: aap_public_key.der
   sourceBasePath: src/test/resources
   targetBasePath: ready_to_agent
+  filePrefixForLocalProcessing: filePrefixForLocalProcessing
+
+spring:
+  profiles:
+    active: dev
+fileProcessing-listener:
+  checksum-calculator:
+    jobName: fileProcessing-listener.checksum-calculator.jobName
+  content-validator:
+    jobName: fileProcessing-listener.content-validator.jobName
+
