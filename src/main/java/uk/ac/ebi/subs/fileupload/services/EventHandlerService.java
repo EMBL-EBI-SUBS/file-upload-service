@@ -14,7 +14,6 @@ import uk.ac.ebi.subs.fileupload.errors.FileDeletionException;
 import uk.ac.ebi.subs.fileupload.listeners.FileDeletedMessage;
 import uk.ac.ebi.subs.fileupload.model.ChecksumGenerationMessage;
 import uk.ac.ebi.subs.fileupload.model.FileContentValidationMessage;
-import uk.ac.ebi.subs.fileupload.model.FileDeleteMessage;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.util.FileType;
 import uk.ac.ebi.subs.messaging.Exchanges;
@@ -24,6 +23,7 @@ import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.StringJoiner;
 
 /**
  * This class is responsible for handling the various events published by the tusd server.
@@ -37,6 +37,14 @@ public class EventHandlerService {
 
     @Value("${file-upload.sourceBasePath}")
     private String sourcePath;
+
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
+    @Value("${fileProcessing-listener.checksum-calculator.jobName}")
+    private String checksumCalculatorJobName;
+    @Value("${fileProcessing-listener.content-validator.jobName}")
+    private String contentValidatorJobName;
 
     private static final String EVENT_FILE_CHECKSUM_GENERATION = "file.checksum.generation";
     private static final String EVENT_FILE_CONTENT_VALIDATION = "file.content.validation";
@@ -140,7 +148,23 @@ public class EventHandlerService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public void executeChecksumCalculation(File file) {
+    public void executeFileProcessingOnCluster(File file) {
+        executeChecksumCalculationOnCluster(file);
+        executeFileContentValidationOnCluster(file);
+    }
+
+    public void executeFileProcessingOnVM(File file) {
+        try {
+            executeChecksumCalculationOnVM(file);
+            executeFileContentValidationOnVM(file);
+        } catch (IOException ex) {
+            LOGGER.error("Error occurred while processing the file: {}. Error message: {}",
+                    file.getFilename(), ex.getMessage());
+            // TODO send validationResult message to the aggregator
+        }
+    }
+
+    private void executeChecksumCalculationOnCluster(File file) {
         ChecksumGenerationMessage checksumGenerationMessage = new ChecksumGenerationMessage();
         checksumGenerationMessage.setGeneratedTusId(file.getGeneratedTusId());
 
@@ -150,7 +174,18 @@ public class EventHandlerService {
         rabbitMessagingTemplate.convertAndSend(SUBMISSION_EXCHANGE, EVENT_FILE_CHECKSUM_GENERATION, checksumGenerationMessage);
     }
 
-    public void executeFileContentValidation(File file) {
+    private void executeChecksumCalculationOnVM(File file) throws IOException {
+        StringJoiner commandForComputeMD5OnVM = new StringJoiner(" ");
+        commandForComputeMD5OnVM.add(checksumCalculatorJobName).add(file.getGeneratedTusId())
+                .add(activeProfile);
+
+        LOGGER.info("Executing the following command on the VM: {}", commandForComputeMD5OnVM);
+
+        java.lang.Runtime rt = java.lang.Runtime.getRuntime();
+        rt.exec(commandForComputeMD5OnVM.toString());
+    }
+
+    private void executeFileContentValidationOnCluster(File file) {
         final String fileTargetPath = file.getTargetPath();
         String fileType = FileType.getFileTypeByExtension(fileTargetPath);
         if (fileType != null) {
@@ -170,6 +205,33 @@ public class EventHandlerService {
         }
     }
 
+    private void executeFileContentValidationOnVM(File file) throws IOException {
+        StringJoiner commandForValidateFileContent = new StringJoiner(" ");
+        commandForValidateFileContent.add(contentValidatorJobName)
+                .add(assembleCommandLineParameters(file))
+                .add(activeProfile);
+
+        LOGGER.info("Executing the following command on the VM: {}", commandForValidateFileContent);
+
+        Runtime rt = Runtime.getRuntime();
+        rt.exec(commandForValidateFileContent.toString());
+    }
+
+    private String assembleCommandLineParameters(File file) {
+        final String targetPath = file.getTargetPath();
+
+        StringJoiner commandLineParameters = new StringJoiner(" ");
+        commandLineParameters
+                .add(file.getId())
+                .add(targetPath)
+                .add(FileType.getFileTypeByExtension(targetPath))
+                .add(file.getValidationResult().getUuid())
+                .add(String.valueOf(file.getValidationResult().getVersion()));
+
+        return commandLineParameters.toString();
+    }
+
+
     public File validateFileReference(String tusId) {
         return validationService.validateFileReference(tusId);
     }
@@ -188,4 +250,5 @@ public class EventHandlerService {
 
         return persistedFile;
     }
+
 }

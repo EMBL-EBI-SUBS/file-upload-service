@@ -36,6 +36,8 @@ public class PostFinishEvent implements TusEvent {
     private String sourcePath;
     @Value("${file-upload.targetBasePath}")
     private String targetBasePath;
+    @Value("${file-upload.filePrefixForLocalProcessing}")
+    private String filePrefixForLocalProcessing;
 
     @Override
     public ResponseEntity<Object> handle(TUSFileInfo tusFileInfo, EventHandlerService eventHandlerService) {
@@ -58,11 +60,19 @@ public class PostFinishEvent implements TusEvent {
 
             response = moveFile(file, eventHandlerService, fullSourcePath, fullTargetPath);
             file = eventHandlerService.validateFileReference(file.getGeneratedTusId());
-            eventHandlerService.executeChecksumCalculation(file);
-            eventHandlerService.executeFileContentValidation(file);
+
+            processFile(eventHandlerService, file);
         }
 
         return response;
+    }
+
+    private void processFile(EventHandlerService eventHandlerService, File file) {
+        if (!file.getFilename().startsWith(filePrefixForLocalProcessing)) {
+            eventHandlerService.executeFileProcessingOnCluster(file);
+        } else {
+            eventHandlerService.executeFileProcessingOnVM(file);
+        }
     }
 
     ResponseEntity<Object> moveFile(File file, EventHandlerService eventHandlerService, String fullSourcePath, String fullTargetPath) {
