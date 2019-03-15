@@ -8,3 +8,4 @@ file-upload:
     certificatePath: aap_public_key.der
   sourceBasePath: src/test/resources
   targetBasePath: ready_to_agent
+  filePrefixForLocalProcessing: local_file_prefix
