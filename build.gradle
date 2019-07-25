@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.2.RELEASE'
+		springBootVersion = '1.5.21.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -23,7 +23,7 @@ apply plugin: 'application'
 apply plugin: 'org.hidetake.ssh'
 
 group = 'uk.ac.ebi.subs'
-version = '0.10.0-SNAPSHOT'
+version = '0.10.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
 mainClassName = "uk.ac.ebi.subs.FileUploadServiceApplication"
@@ -45,6 +45,8 @@ dependencies {
 	compile("org.springframework.boot:spring-boot-starter-actuator")
 	compile("de.siegmar:logback-gelf:1.1.0")
 
+	compile 'de.codecentric:spring-boot-admin-starter-client:1.5.7'
+
 	compileOnly('org.projectlombok:lombok')
 
 	testCompile('org.springframework.boot:spring-boot-starter-test')
@@ -64,6 +66,7 @@ mongo {
 
 springBoot {
     executable = true
+	buildInfo()
 }
 
 ext.gradle_env = hasProperty('env') ? env : 'dev'
