@@ -19,3 +19,35 @@ fileProcessing-listener:
   content-validator:
     jobName: fileProcessing-listener.content-validator.jobName
 
+usi:
+  repositoryMapping:
+    analysis: variantCalls
+    assayData:
+      - sequencingRuns
+      - metabolightsAssayData
+    assay:
+      - sequencingExperiments
+      - metabolomicsAssays
+    egaDacPolicy: egaDacPolicies
+    egaDac: egaDacs
+    egaDataset: egaDatasets
+    project: projects
+    protocol: metabolightsProtocols
+    sampleGroup:
+    sample: samples
+    study:
+      - enaStudies
+      - metabolomicsStudies
+  archive:
+    dispatcher:
+      enabled:
+        - BioSamples
+        - BioStudies
+        - Ena
+      data-types:
+        BioSamples: samples
+        BioStudies: projects
+        Ena:
+          - enaStudies
+          - sequencingExperiments
+          - sequencingRuns

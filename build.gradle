@@ -23,7 +23,7 @@ apply plugin: 'application'
 apply plugin: 'org.hidetake.ssh'
 
 group = 'uk.ac.ebi.subs'
-version = '0.10.1'
+version = '0.10.2-SNAPSHOT'
 sourceCompatibility = 1.8
 
 mainClassName = "uk.ac.ebi.subs.FileUploadServiceApplication"
@@ -38,7 +38,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
 
-    compile('uk.ac.ebi.subs:subs-repository:2.13.0-SNAPSHOT') {changing = true}
+    compile('uk.ac.ebi.subs:subs-repository:2.30.1-SNAPSHOT') {changing = true}
 	compile('uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT')
 
     compile('org.bitbucket.b_c:jose4j:0.5.2')
