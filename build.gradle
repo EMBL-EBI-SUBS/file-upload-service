@@ -21,7 +21,6 @@ plugins {
 
 group = 'uk.ac.ebi.subs'
 version = '0.11.0-SNAPSHOT'
-
 mainClassName = "uk.ac.ebi.subs.FileUploadServiceApplication"
 
 java {
@@ -44,11 +43,11 @@ dependencies {
 	compile('uk.ac.ebi.subs:subs-repository:2.33.3-SNAPSHOT') {changing = true}
 	compile('uk.ac.ebi.subs:subs-messaging:0.6.0-SNAPSHOT')
 
-    compile('org.springframework.boot:spring-boot-starter-web')
+  compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
 	compile("org.springframework.boot:spring-boot-starter-amqp")
 
-    compile('org.bitbucket.b_c:jose4j:0.5.2')
+  compile('org.bitbucket.b_c:jose4j:0.5.2')
 	compile("org.springframework.boot:spring-boot-starter-actuator")
 	compile("de.siegmar:logback-gelf:1.1.0")
 
