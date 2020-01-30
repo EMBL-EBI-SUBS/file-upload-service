@@ -1,0 +1,12 @@
+= [.ebi-color]#Release notes#
+:toc: auto
+
+This pages contains links to release notes for DSP's File Upload Service application.
+
+[[section]]
+== v1.2.0 Release notes
+
+Platform upgrades:
+--------------
+1. DSP's File Upload Service application now runs on Java 11 (Open JDK 11).
+--------------
