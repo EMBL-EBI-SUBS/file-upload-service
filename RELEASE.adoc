@@ -4,7 +4,7 @@
 This pages contains links to release notes for DSP's File Upload Service application.
 
 [[section]]
-== v1.2.0 Release notes
+== v0.11.0 Release notes
 
 Platform upgrades:
 --------------
