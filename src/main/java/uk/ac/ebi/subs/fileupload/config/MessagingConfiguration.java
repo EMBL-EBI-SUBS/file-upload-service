@@ -15,6 +15,7 @@ import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import uk.ac.ebi.subs.messaging.ExchangeConfig;
 import uk.ac.ebi.subs.messaging.Queues;
+import uk.ac.ebi.subs.messaging.Topics;
 
 /**
  * This is a {@link Configuration} class responsible for configuring message related {@link Bean}s.
@@ -25,6 +26,10 @@ public class MessagingConfiguration {
 
     public static final String USI_FILE_DELETION_QUEUE = "usi-file-deletion";
     private static final String EVENT_FILE_DELETION = "usi.file.deletion";
+
+    public static final String USI_FU_GLOBUS_SHARE_REQUEST = "usi-fu-globus-share-request";
+
+    public static final String FU_GLOBUS_SUB_UNREGISTER = "usi-fu-globus-sub-unregister";
 
     @Bean
     public MessageConverter messageConverter() {
@@ -72,5 +77,28 @@ public class MessagingConfiguration {
     Binding fileDeletionBinding(Queue fileDeletionQueue, TopicExchange submissionExchange) {
         return BindingBuilder.bind(fileDeletionQueue).to(submissionExchange)
                 .with(EVENT_FILE_DELETION);
+    }
+
+    @Bean
+    Queue usiFuGlobusShareRequestQueue() {
+        return Queues.buildQueueWithDlx(USI_FU_GLOBUS_SHARE_REQUEST);
+    }
+
+    @Bean
+    Binding usiFuGlobusShareRequestQueueBinding(Queue usiFuGlobusShareRequestQueue, TopicExchange submissionExchange) {
+        //todo read from Queues class.
+        return BindingBuilder.bind(usiFuGlobusShareRequestQueue).to(submissionExchange)
+                .with("usi.fu.globus.share.request");
+    }
+
+    @Bean
+    Queue fuGlobusSubUnregisterQueue() {
+        return Queues.buildQueueWithDlx(FU_GLOBUS_SUB_UNREGISTER);
+    }
+
+    @Bean
+    Binding submissionSubmittedQueueBinding(Queue fuGlobusSubUnregisterQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(fuGlobusSubUnregisterQueue).to(submissionExchange)
+                .with(Topics.EVENT_SUBMISSION_SUBMITTED);
     }
 }

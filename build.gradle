@@ -34,14 +34,15 @@ springBoot {
 }
 
 repositories {
+	mavenLocal()
 	mavenCentral()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
-
 dependencies {
-	compile('uk.ac.ebi.subs:subs-repository:2.33.3-SNAPSHOT') {changing = true}
+	compile('uk.ac.ebi.subs:subs-repository:2.34.0-SNAPSHOT') {changing = true}
 	compile('uk.ac.ebi.subs:subs-messaging:0.6.0-SNAPSHOT')
+	compile("uk.ac.ebi.subs:subs-processing-model:2.15.0-SNAPSHOT")
 
   	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
