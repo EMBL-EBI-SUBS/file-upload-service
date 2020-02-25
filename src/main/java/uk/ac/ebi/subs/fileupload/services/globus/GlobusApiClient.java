@@ -184,7 +184,8 @@ public class GlobusApiClient {
 
     private URI getUri(String baseUrl, String apiVersion, String path) {
         try {
-            URL url = new URL(new URL(new URL(baseUrl), apiVersion), path);
+            URL url = new URL(new URL(baseUrl), apiVersion + "/");
+            url = new URL(url, url.getPath() + path);
 
             return url.toURI();
         } catch (MalformedURLException | URISyntaxException e) {
