@@ -9,6 +9,21 @@ file-upload:
   sourceBasePath: src/test/resources
   targetBasePath: ready_to_agent
   filePrefixForLocalProcessing: filePrefixForLocalProcessing
+  globus:
+    url:
+      auth: https://auth.globus.org
+      transfer: https://transfer.api.globusonline.org
+    client:
+      id: fake-id
+      secret: fake-secret
+    transferRefreshToken: fake-refresh-token
+    hostEndpoint:
+      id: fake-id
+      baseDirectory: /~/fake/dir
+      activation:
+        username: fake-username
+        password: fake-password
+    baseUploadDirectory: /fake/dir
 
 spring:
   profiles:

@@ -25,6 +25,7 @@ hs_err_pid*
 /build/
 /out
 !gradle/wrapper/gradle-wrapper.jar
+LOG_HOME_IS_UNDEFINED
 
 ### IntelliJ IDEA ###
 .idea

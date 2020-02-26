@@ -10,6 +10,6 @@ public class Config {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplateBuilder().build();
+        return new RestTemplateBuilder().setConnectTimeout(30_000).build();
     }
 }
