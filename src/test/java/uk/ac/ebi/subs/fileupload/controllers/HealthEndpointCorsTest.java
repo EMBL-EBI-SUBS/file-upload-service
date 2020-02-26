@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.subs.fileupload.services.ValidationService;
+import uk.ac.ebi.subs.fileupload.services.globus.GlobusApiClient;
+import uk.ac.ebi.subs.fileupload.services.globus.GlobusService;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 import java.io.IOException;
@@ -39,6 +41,12 @@ public class HealthEndpointCorsTest {
 
     @MockBean
     private FileRepository fileRepository;
+
+    @MockBean
+    private GlobusApiClient globusApiClient;
+
+    @MockBean
+    private GlobusService globusService;
 
     @Test
     public void emulateCorsPreflight() throws IOException, Exception {

@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
+import uk.ac.ebi.subs.fileupload.services.globus.GlobusApiClient;
+import uk.ac.ebi.subs.fileupload.services.globus.GlobusService;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
@@ -40,6 +43,12 @@ public class PostTerminateEventTest {
 
     @Autowired
     private FileRepository fileRepository;
+
+    @MockBean
+    private GlobusApiClient globusApiClient;
+
+    @MockBean
+    private GlobusService globusService;
 
     private File temporaryUploadedFile;
 

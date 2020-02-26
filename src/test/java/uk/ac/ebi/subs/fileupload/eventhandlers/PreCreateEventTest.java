@@ -14,6 +14,8 @@ import uk.ac.ebi.subs.fileupload.errors.FileApiError;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
 import uk.ac.ebi.subs.fileupload.services.ValidationService;
+import uk.ac.ebi.subs.fileupload.services.globus.GlobusApiClient;
+import uk.ac.ebi.subs.fileupload.services.globus.GlobusService;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
@@ -41,6 +43,12 @@ public class PreCreateEventTest {
 
     @MockBean
     private FileRepository fileRepository;
+
+    @MockBean
+    private GlobusApiClient globusApiClient;
+
+    @MockBean
+    private GlobusService globusService;
 
     PreCreateEvent preCreateEvent;
 

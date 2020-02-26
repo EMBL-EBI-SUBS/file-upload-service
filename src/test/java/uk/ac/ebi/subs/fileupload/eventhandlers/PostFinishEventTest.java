@@ -16,6 +16,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
+import uk.ac.ebi.subs.fileupload.services.globus.GlobusApiClient;
+import uk.ac.ebi.subs.fileupload.services.globus.GlobusService;
 import uk.ac.ebi.subs.fileupload.util.TusFileInfoHelper;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
@@ -80,6 +82,12 @@ public class PostFinishEventTest {
 
     @SpyBean
     private PostFinishEvent postFinishEvent;
+
+    @MockBean
+    private GlobusApiClient globusApiClient;
+
+    @MockBean
+    private GlobusService globusService;
 
     @Before
     public void setup() throws  IOException {
