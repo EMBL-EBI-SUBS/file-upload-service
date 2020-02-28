@@ -1,7 +1,10 @@
 package uk.ac.ebi.subs.fileupload.config;
 
 import org.apache.http.HttpHost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,10 +13,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 
 @Configuration("FileUploadServiceConfiguration")
 public class Config {
@@ -33,12 +39,11 @@ public class Config {
         if (proxyHost != null && proxyPort != null) {
             LOGGER.info("Applying proxy settings to Globus REST client. Host : {}, Port : {}", proxyHost, proxyPort);
 
-            HttpHost proxy = new HttpHost(proxyHost, proxyPort, "https");
+            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+            requestFactory.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort)));
+            requestFactory.setOutputStreaming(false);
 
-            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-            requestFactory.setHttpClient(HttpClientBuilder.create().setProxy(proxy).build());
-
-            restTemplateBuilder = restTemplateBuilder.detectRequestFactory(false).requestFactory(requestFactory);
+            restTemplateBuilder = restTemplateBuilder.requestFactory(requestFactory);
         }
 
         RestTemplate res = restTemplateBuilder
