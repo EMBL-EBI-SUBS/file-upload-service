@@ -2,6 +2,8 @@ package uk.ac.ebi.subs.fileupload.config;
 
 import org.apache.http.HttpHost;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +18,8 @@ import java.io.IOException;
 @Configuration("FileUploadServiceConfiguration")
 public class Config {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Config.class);
+
     @Value("${file-upload.globus.proxy.host:#{null}}")
     private String proxyHost;
 
@@ -27,6 +31,8 @@ public class Config {
         RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
 
         if (proxyHost != null && proxyPort != null) {
+            LOGGER.info("Applying proxy settings to Globus REST client. Host : {}, Port : {}", proxyHost, proxyPort);
+
             HttpHost proxy = new HttpHost(proxyHost, proxyPort, "https");
 
             HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
@@ -41,7 +47,7 @@ public class Config {
                     public void handleError(ClientHttpResponse response) throws IOException {
                     }
                 })
-                .setReadTimeout(30_000)
-                .setConnectTimeout(30_000).build();
+                .setReadTimeout(15_000)
+                .setConnectTimeout(15_000).build();
     }
 }
