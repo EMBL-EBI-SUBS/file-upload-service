@@ -26,7 +26,7 @@ public class GlobusEventListener {
         try {
             return globusService.getShareLink(submitterEmail);
         } catch (Exception ex) {
-            LOGGER.error("Error getting share for requested submitter : {}", submitterEmail);
+            LOGGER.error("Error getting share for requested submitter : {}", submitterEmail, ex);
         }
 
         return null;
@@ -44,7 +44,7 @@ public class GlobusEventListener {
             globusService.unregisterSubmission(submitterEmail, submissionId);
         } catch (Exception ex) {
             LOGGER.error("Error unregistering submission. SubmitterEmail : {}, SubmissionID : {}",
-                    submitterEmail, submissionId);
+                    submitterEmail, submissionId, ex);
         }
     }
 }
