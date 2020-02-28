@@ -10,6 +10,9 @@ file-upload:
   targetBasePath: ready_to_agent
   filePrefixForLocalProcessing: local_file_prefix
   globus:
+    proxy:
+      host: pg-wwwcache.ebi.ac.uk
+      port: 3128
     url:
       auth: https://auth.globus.org
       transfer: https://transfer.api.globusonline.org

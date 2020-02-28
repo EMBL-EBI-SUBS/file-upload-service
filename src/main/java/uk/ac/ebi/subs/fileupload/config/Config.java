@@ -38,10 +38,10 @@ public class Config {
             HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
             requestFactory.setHttpClient(HttpClientBuilder.create().setProxy(proxy).build());
 
-            restTemplateBuilder.requestFactory(requestFactory);
+            restTemplateBuilder = restTemplateBuilder.detectRequestFactory(false).requestFactory(requestFactory);
         }
 
-        return restTemplateBuilder
+        RestTemplate res = restTemplateBuilder
                 .errorHandler(new DefaultResponseErrorHandler(){
                     @Override
                     public void handleError(ClientHttpResponse response) throws IOException {
@@ -49,5 +49,7 @@ public class Config {
                 })
                 .setReadTimeout(15_000)
                 .setConnectTimeout(15_000).build();
+
+        return res;
     }
 }
