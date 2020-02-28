@@ -27,7 +27,7 @@ public class Config {
         RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
 
         if (proxyHost != null && proxyPort != null) {
-            HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+            HttpHost proxy = new HttpHost(proxyHost, proxyPort, "https");
 
             HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
             requestFactory.setHttpClient(HttpClientBuilder.create().setProxy(proxy).build());
