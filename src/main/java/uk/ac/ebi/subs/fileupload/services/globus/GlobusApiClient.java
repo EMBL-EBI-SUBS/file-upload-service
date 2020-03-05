@@ -2,13 +2,14 @@ package uk.ac.ebi.subs.fileupload.services.globus;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -28,6 +29,8 @@ public class GlobusApiClient {
 
     private static final String AUTH_API_VERSION_2 = "v2";
     private static final String TRANSFER_API_VERSION_0_10 = "v0.10";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobusApiClient.class);
 
     @Value("${file-upload.globus.url.auth}")
     private String authApiUrl;
@@ -224,6 +227,10 @@ public class GlobusApiClient {
 
     @PostConstruct
     private void init() {
-        transferAccessToken = getRefreshedAccessToken();
+        try {
+            transferAccessToken = getRefreshedAccessToken();
+        } catch (Exception ex) {
+            LOGGER.error("Error getting access token.", ex);
+        }
     }
 }

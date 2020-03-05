@@ -11,6 +11,7 @@ import uk.ac.ebi.subs.fileupload.errors.ErrorMessages;
 import uk.ac.ebi.subs.fileupload.errors.ErrorResponse;
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
+import uk.ac.ebi.subs.fileupload.util.Utils;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 
 import java.io.IOException;
@@ -53,10 +54,10 @@ public class PostFinishEvent implements TusEvent {
         if (response.getStatusCode().equals(HttpStatus.OK)) {
             String sourceFileName = file.getGeneratedTusId() + BIN_FILE_EXTENSION_BY_TUS;
             String fullSourcePath = assembleFullSourcePath(sourceFileName);
-            String targetPath = generateFolderName(file.getSubmissionId());
+            String targetPath = Utils.generateFolderName(file.getSubmissionId());
             String fullTargetPath = assembleFullTargetPath(targetBasePath, targetPath);
 
-            setFilePpropertiesBeforeMoveFile(file, fullSourcePath, fullTargetPath, eventHandlerService);
+            setFilePropertiesBeforeMoveFile(file, fullSourcePath, fullTargetPath, eventHandlerService);
 
             response = moveFile(file, eventHandlerService, fullSourcePath, fullTargetPath);
             file = eventHandlerService.validateFileReference(file.getGeneratedTusId());
@@ -81,7 +82,7 @@ public class PostFinishEvent implements TusEvent {
             moveFile(file.getFilename(), fullSourcePath, fullTargetPath);
             deleteInfoFile(fullSourcePath);
 
-            response = setFilePpropertiesAfterMoveFile(file, fullTargetPath, eventHandlerService);
+            response = setFilePropertiesAfterMoveFile(file, fullTargetPath, eventHandlerService);
         } catch (IOException e) {
             response = ErrorResponse.assemble(HttpStatus.ACCEPTED, ErrorMessages.FILE_CREATION_ERROR);
         }
@@ -97,14 +98,14 @@ public class PostFinishEvent implements TusEvent {
         return String.join(FILE_SEPARATOR, sourcePath, targetBasePath, targetPath);
     }
 
-    private ResponseEntity<Object> setFilePpropertiesBeforeMoveFile(File file, String fullSourcePath, String fullTargetPath, EventHandlerService eventHandlerService) {
+    private ResponseEntity<Object> setFilePropertiesBeforeMoveFile(File file, String fullSourcePath, String fullTargetPath, EventHandlerService eventHandlerService) {
         file.setUploadPath(fullSourcePath);
         file.setTargetPath(String.join(FILE_SEPARATOR, fullTargetPath, file.getFilename()));
 
         return eventHandlerService.persistOrUpdateFileInformation(file);
     }
 
-    private ResponseEntity<Object> setFilePpropertiesAfterMoveFile(File file, String fullTargetPath, EventHandlerService eventHandlerService) {
+    private ResponseEntity<Object> setFilePropertiesAfterMoveFile(File file, String fullTargetPath, EventHandlerService eventHandlerService) {
         file.setStatus(FileStatus.READY_FOR_CHECKSUM);
         file.setUploadPath(String.join(FILE_SEPARATOR, fullTargetPath, file.getFilename()));
 
@@ -120,14 +121,4 @@ public class PostFinishEvent implements TusEvent {
         Files.deleteIfExists(Paths.get(fullSourcePath.substring(0, fullSourcePath.length() - 3) + "info"));
     }
 
-    private String generateFolderName(String submissionUUID) {
-        StringBuilder folderName = new StringBuilder();
-        folderName.append(submissionUUID.substring(0, 1));
-        folderName.append(FILE_SEPARATOR);
-        folderName.append(submissionUUID.substring(1, 2));
-        folderName.append(FILE_SEPARATOR);
-        folderName.append(submissionUUID);
-
-        return folderName.toString();
-    }
 }

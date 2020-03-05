@@ -11,12 +11,22 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.subs.data.fileupload.FileStatus;
+import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
+import uk.ac.ebi.subs.fileupload.util.Utils;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.model.fileupload.GlobusShare;
+import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.GlobusShareRepository;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class GlobusService {
@@ -27,54 +37,81 @@ public class GlobusService {
     private GlobusShareRepository globusShareRepository;
 
     @Autowired
+    private FileRepository fileRepository;
+
+    @Autowired
+    private EventHandlerService eventHandlerService;
+
+    @Autowired
     private MongoOperations mongoOperations;
 
     @Autowired
     private GlobusApiClient globusApiClient;
 
+    @Value("${file-upload.sourceBasePath}")
+    private String sourceBasePath;
+    @Value("${file-upload.targetBasePath}")
+    private String targetBasePath;
+
     @Value("${file-upload.globus.baseUploadDirectory}")
     private String baseUploadDir;
-
     @Value("${file-upload.globus.hostEndpoint.baseDirectory}")
     private String hostEndpointBaseDir;
 
-    public String getShareLink(String owner) {
-        return String.format("https://app.globus.org/file-manager?origin_id=%s", getOrCreateGlobusShare(owner));
+    @Value("${file-upload.filePrefixForLocalProcessing}")
+    private String filePrefixForLocalProcessing;
+
+    public String getShareLink(String owner, String submissionId) {
+        return String.format("https://app.globus.org/file-manager?origin_id=%s", getOrCreateGlobusShare(owner, submissionId));
     }
 
-    public void registerSubmission(String owner, String submissionId) {
+    public void processUploadedFiles(String owner, String submissionId, List<String> files) {
+        GlobusShare gs = globusShareRepository.findOne(owner);
+        if (gs == null) {
+            throw new IllegalArgumentException("No share found against owner : " + owner);
+        }
 
-        GlobusShare gs = null;
-        do {
-            gs = getOrCreateGlobusShare(owner);
+        if (gs.getRegisteredSubmissionIds().stream().noneMatch(regSubId -> regSubId.equals(submissionId))) {
+            throw new IllegalArgumentException("Submission ID not registered with share : " + submissionId + ", owner : " + owner);
+        }
 
-            //If the share document got deleted after the execution of previous line,
-            //following operation will return null . . .
-            gs = mongoOperations.findAndModify(
-                    Query.query(Criteria.where("owner").is(owner)),
-                    new Update().addToSet("openSubmissionIds", submissionId),
-                    FindAndModifyOptions.options().returnNew(true).upsert(false),
-                    GlobusShare.class);
+        files.stream()
+                .filter(file -> file != null && !file.isBlank()
+                            && fileRepository.findByFilenameAndSubmissionId(file, submissionId) == null)
+                .map(file -> Paths.get(baseUploadDir, owner, file))
+                .filter(filePath -> Files.exists(filePath))
+                .map(filePath -> new java.io.File(filePath.toUri()))
+                .map(file -> createFileObject(owner, submissionId, file))
+                .forEach(fileObj -> {
+                    fileRepository.save(fileObj);
 
-            //. . . and then, repeat.
-        } while (gs == null);
+                    moveFile(fileObj);
+
+                    fileObj.setUploadPath(fileObj.getTargetPath());
+                    fileObj.setStatus(FileStatus.READY_FOR_CHECKSUM);
+                    fileRepository.save(fileObj);
+
+                    eventHandlerService.validateFileReference(fileObj.getGeneratedTusId());
+
+                    processFile(fileObj);
+                });
     }
 
     public void unregisterSubmission(String owner, String submissionId) {
         GlobusShare gs = globusShareRepository.findOne(owner);
         if (gs == null
-                || gs.getOpenSubmissionIds().stream().filter(subId -> subId.equals(submissionId)).findFirst().isEmpty()) {
+                || gs.getRegisteredSubmissionIds().stream().filter(subId -> subId.equals(submissionId)).findFirst().isEmpty()) {
             return;
         }
 
         mongoOperations.findAndModify(
                 Query.query(Criteria.where("owner").is(owner)),
-                new Update().pull("openSubmissionIds", submissionId),
+                new Update().pull("registeredSubmissionIds", submissionId),
                 FindAndModifyOptions.options().returnNew(true).upsert(false),
                 GlobusShare.class);
 
         gs = mongoOperations.findAndRemove(
-                Query.query(Criteria.where("owner").is(owner).and("openSubmissionIds").size(0)),
+                Query.query(Criteria.where("owner").is(owner).and("registeredSubmissionIds").size(0)),
                 GlobusShare.class);
 
         if (gs != null) {
@@ -92,7 +129,7 @@ public class GlobusService {
      * @param owner Owner of the share.
      * @return
      */
-    private GlobusShare getOrCreateGlobusShare(String owner) {
+    private GlobusShare getOrCreateGlobusShare(String owner, String submissionId) {
         GlobusShare gs = null;
 
         //Wait for 1 second on each iteration of this loop until the share becomes available. 1sec X 30 = 30 seconds wait period.
@@ -104,7 +141,7 @@ public class GlobusService {
                     //Attempt to create a new one if it does not.
                     //Following method attempts to create a unique share against the given owner. If multiple threads call this method
                     //then all except the first one that managed to create a share will fail and will return with a 'null' value.
-                    gs = createGlobusShare(owner);
+                    gs = createGlobusShare(owner, submissionId);
                     if (gs != null) {
                         return gs;
                     }
@@ -115,38 +152,52 @@ public class GlobusService {
                 }
             } while (gs == null);
 
-            //Share link becomes available after the creation of the document. Return it if its available.
+            //Share link becomes available after the creation of the document.
             if (gs.getSharedEndpointId() != null) {
-                break;
+                //Register submission with the share.
+                gs = mongoOperations.findAndModify(
+                        Query.query(Criteria.where("owner").is(owner)),
+                        new Update().addToSet("registeredSubmissionIds", submissionId),
+                        FindAndModifyOptions.options().returnNew(true).upsert(false),
+                        GlobusShare.class);
+
+                //If the share got removed before the above operation . . .
+                if (gs == null) {
+                    LOGGER.debug("Share no longer available for registration. Owner : {}, SubmissionID : {}",
+                            owner, submissionId);
+                    //. . . reset the waiting period and repeat.
+                    i = 0;
+                } else {
+                    break;
+                }
             }
 
-            //Or wait . . .
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                LOGGER.error("Error waiting for Globus share availability.", e);
+                LOGGER.error("Error waiting for Globus share availability. Owner : {}, SubmissionID : {}",
+                        owner, submissionId, e);
             }
-
-            //. . . and repeat the whole process again as its quite possible that the share might have been deleted during the wait.
         }
 
         if (gs.getSharedEndpointId() == null) {
-            throw new RuntimeException("Share availability waiting period expired. owner : " + owner);
+            throw new RuntimeException("Share availability waiting period expired. owner : " + owner + ", submissionId : " + submissionId);
         }
 
         return gs;
     }
 
-    private GlobusShare createGlobusShare(String owner) {
+    private GlobusShare createGlobusShare(String owner, String submissionId) {
         GlobusShare gs = new GlobusShare();
         gs.setOwner(owner);
+        gs.getRegisteredSubmissionIds().add(submissionId);
 
         try {
             gs = globusShareRepository.save(gs);
             createUploadDirectory(gs);
             return createShareLink(gs);
         } catch (DuplicateKeyException ex) {
-            LOGGER.info("Cannot create a another share document for the given owner : {}", owner);
+            LOGGER.info("Cannot create a another share document for the given owner : {}, submissionId : {}", owner, submissionId);
         }
 
         return null;
@@ -161,7 +212,7 @@ public class GlobusService {
                 //delete the share object to make retry possible.
                 globusShareRepository.delete(gs.getId());
 
-                throw new RuntimeException(ex);
+                throw new RuntimeException("Error creating upload directory for owner : " + gs.getOwner(), ex);
             }
         }
     }
@@ -170,7 +221,7 @@ public class GlobusService {
         String sharedEndpointId = null;
         try {
             sharedEndpointId = globusApiClient.createShare(
-                    hostEndpointBaseDir + gs.getOwner(), gs.getOwner(), "");
+                    hostEndpointBaseDir + "/" + gs.getOwner(), UUID.randomUUID().toString(), "");
         } catch (Exception ex) {
             //delete the share object to make retry possible.
             globusShareRepository.delete(gs.getId());
@@ -181,5 +232,53 @@ public class GlobusService {
         gs.setSharedEndpointId(sharedEndpointId);
 
         return globusShareRepository.save(gs);
+    }
+
+    private uk.ac.ebi.subs.repository.model.fileupload.File createFileObject(
+            String owner, String submissionId, java.io.File file) {
+
+        File fileObj = new File();
+        fileObj.setCreatedBy(owner);
+        fileObj.setFilename(file.getName());
+        fileObj.setGeneratedTusId(UUID.randomUUID().toString());
+        fileObj.setId(fileObj.getGeneratedTusId());
+        fileObj.setStatus(FileStatus.UPLOADED);
+        fileObj.setSubmissionId(submissionId);
+        fileObj.setTotalSize(file.length());
+        fileObj.setUploadedSize(file.length());
+        fileObj.setUploadStartDate(LocalDateTime.now());
+        fileObj.setUploadFinishDate(fileObj.getUploadStartDate());
+        fileObj.setUploadPath(file.getAbsolutePath());
+        fileObj.setTargetPath(assembleTargetPath(owner, submissionId, file.getAbsolutePath()));
+
+        return fileObj;
+    }
+
+    private String assembleTargetPath(String owner, String submissionId, String sourceFilePath) {
+        String genDirsPath = Utils.generateFolderName(submissionId);
+
+        //Considering the possibility that files might have been uploaded into sub folders
+        //preserve the paths in the assembled target path.
+        String startsWithOwner = sourceFilePath.substring(sourceFilePath.indexOf(owner));
+        String withoutOwner = startsWithOwner.substring(startsWithOwner.indexOf("/") + 1);
+
+        return Paths.get(sourceBasePath, targetBasePath, genDirsPath, withoutOwner).toString();
+    }
+
+    private void moveFile(File file) {
+        try {
+            Files.createDirectories(Paths.get(file.getTargetPath()));
+            Files.move(Paths.get(file.getUploadPath()), Paths.get(file.getTargetPath()), StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            throw new RuntimeException("Error while moving file : " + file.toString(), e);
+        }
+    }
+
+    private void processFile(File file) {
+        if (!file.getFilename().startsWith(filePrefixForLocalProcessing)) {
+            eventHandlerService.executeFileProcessingOnCluster(file);
+        } else {
+            eventHandlerService.executeFileProcessingOnVM(file);
+        }
     }
 }
