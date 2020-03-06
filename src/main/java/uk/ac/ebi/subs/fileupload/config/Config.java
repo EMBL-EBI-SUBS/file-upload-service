@@ -36,7 +36,7 @@ public class Config {
     public RestTemplate globusRestTemplate() {
         RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
 
-        if (proxyHost != null && proxyPort != null) {
+        if (proxyHost != null && !proxyHost.isBlank() && proxyPort != null) {
             LOGGER.info("Applying proxy settings to Globus REST client. Host : {}, Port : {}", proxyHost, proxyPort);
 
             SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();

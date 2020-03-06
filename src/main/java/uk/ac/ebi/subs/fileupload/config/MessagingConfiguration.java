@@ -27,7 +27,9 @@ public class MessagingConfiguration {
     public static final String USI_FILE_DELETION_QUEUE = "usi-file-deletion";
     private static final String EVENT_FILE_DELETION = "usi.file.deletion";
 
-    public static final String FU_GLOBUS_SUB_UNREGISTER = "usi-fu-globus-sub-unregister";
+    public static final String GLOBUS_SHARE_REQUEST_QUEUE = "usi-fu-globus-share-request";
+    public static final String GLOBUS_UPLOADED_FILES_NOTIFICATION_QUEUE = "usi-fu-globus-uploaded-files-notification";
+    public static final String GLOBUS_SUB_UNREGISTER_QUEUE = "usi-fu-globus-sub-unregister";
 
     @Bean
     public MessageConverter messageConverter() {
@@ -78,8 +80,30 @@ public class MessagingConfiguration {
     }
 
     @Bean
+    Queue fuGlobusShareRequestQueue() {
+        return Queues.buildQueueWithDlx(GLOBUS_SHARE_REQUEST_QUEUE);
+    }
+
+    @Bean
+    Binding fuGlobusShareRequestQueueBinding(Queue fuGlobusShareRequestQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(fuGlobusShareRequestQueue).to(submissionExchange)
+                .with(Topics.GLOBUS_SHARE_REQUEST);
+    }
+
+    @Bean
+    Queue fuGlobusUploadedFilesNotificationQueue() {
+        return Queues.buildQueueWithDlx(GLOBUS_UPLOADED_FILES_NOTIFICATION_QUEUE);
+    }
+
+    @Bean
+    Binding fuGlobusUploadedFilesNotificationQueueBinding(Queue fuGlobusUploadedFilesNotificationQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(fuGlobusUploadedFilesNotificationQueue).to(submissionExchange)
+                .with(Topics.GLOBUS_UPLOADED_FILES_NOTIFICATION);
+    }
+
+    @Bean
     Queue fuGlobusSubUnregisterQueue() {
-        return Queues.buildQueueWithDlx(FU_GLOBUS_SUB_UNREGISTER);
+        return Queues.buildQueueWithDlx(GLOBUS_SUB_UNREGISTER_QUEUE);
     }
 
     @Bean

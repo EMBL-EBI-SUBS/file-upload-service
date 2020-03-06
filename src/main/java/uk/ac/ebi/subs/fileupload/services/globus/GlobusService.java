@@ -13,9 +13,12 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.fileupload.services.EventHandlerService;
+import uk.ac.ebi.subs.fileupload.util.FileSource;
 import uk.ac.ebi.subs.fileupload.util.Utils;
+import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.model.fileupload.GlobusShare;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.GlobusShareRepository;
 
@@ -40,6 +43,9 @@ public class GlobusService {
     private FileRepository fileRepository;
 
     @Autowired
+    private SubmissionRepository submissionRepository;
+
+    @Autowired
     private EventHandlerService eventHandlerService;
 
     @Autowired
@@ -53,6 +59,9 @@ public class GlobusService {
     @Value("${file-upload.targetBasePath}")
     private String targetBasePath;
 
+    @Value("${file-upload.globus.shareUrlStringFormat}")
+    private String shareUrlFormat;
+
     @Value("${file-upload.globus.baseUploadDirectory}")
     private String baseUploadDir;
     @Value("${file-upload.globus.hostEndpoint.baseDirectory}")
@@ -62,19 +71,10 @@ public class GlobusService {
     private String filePrefixForLocalProcessing;
 
     public String getShareLink(String owner, String submissionId) {
-        return String.format("https://app.globus.org/file-manager?origin_id=%s", getOrCreateGlobusShare(owner, submissionId));
+        return getOrCreateGlobusShare(owner, submissionId).getShareLink();
     }
 
     public void processUploadedFiles(String owner, String submissionId, List<String> files) {
-        GlobusShare gs = globusShareRepository.findOne(owner);
-        if (gs == null) {
-            throw new IllegalArgumentException("No share found against owner : " + owner);
-        }
-
-        if (gs.getRegisteredSubmissionIds().stream().noneMatch(regSubId -> regSubId.equals(submissionId))) {
-            throw new IllegalArgumentException("Submission ID not registered with share : " + submissionId + ", owner : " + owner);
-        }
-
         files.stream()
                 .filter(file -> file != null && !file.isBlank()
                             && fileRepository.findByFilenameAndSubmissionId(file, submissionId) == null)
@@ -230,18 +230,20 @@ public class GlobusService {
         }
 
         gs.setSharedEndpointId(sharedEndpointId);
+        gs.setShareLink(String.format(shareUrlFormat, sharedEndpointId));
 
         return globusShareRepository.save(gs);
     }
 
-    private uk.ac.ebi.subs.repository.model.fileupload.File createFileObject(
-            String owner, String submissionId, java.io.File file) {
+    private File createFileObject(String owner, String submissionId, java.io.File file) {
+        Submission submission = submissionRepository.findOne(submissionId);
 
         File fileObj = new File();
-        fileObj.setCreatedBy(owner);
+        fileObj.setCreatedBy(submission.getSubmitter().getName());
         fileObj.setFilename(file.getName());
         fileObj.setGeneratedTusId(UUID.randomUUID().toString());
         fileObj.setId(fileObj.getGeneratedTusId());
+        fileObj.setSource(FileSource.GLOBUS.toString());
         fileObj.setStatus(FileStatus.UPLOADED);
         fileObj.setSubmissionId(submissionId);
         fileObj.setTotalSize(file.length());
@@ -257,7 +259,7 @@ public class GlobusService {
     private String assembleTargetPath(String owner, String submissionId, String sourceFilePath) {
         String genDirsPath = Utils.generateFolderName(submissionId);
 
-        //Considering the possibility that files might have been uploaded into sub folders
+        //Considering the possibility that files might have been uploaded into sub folders,
         //preserve the paths in the assembled target path.
         String startsWithOwner = sourceFilePath.substring(sourceFilePath.indexOf(owner));
         String withoutOwner = startsWithOwner.substring(startsWithOwner.indexOf("/") + 1);

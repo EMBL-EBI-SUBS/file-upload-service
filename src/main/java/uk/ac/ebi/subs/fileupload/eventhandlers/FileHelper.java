@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.fileupload.eventhandlers;
 
 import uk.ac.ebi.subs.fileupload.model.TUSFileInfo;
+import uk.ac.ebi.subs.fileupload.util.FileSource;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 
 /**
@@ -15,6 +16,7 @@ public class FileHelper {
         file.setFilename(tusFileInfo.getMetadata().getFilename());
         file.setTotalSize(tusFileInfo.getSize());
         file.setUploadedSize(tusFileInfo.getOffsetValue());
+        file.setSource(FileSource.TUS.toString());
 
         return file;
     }

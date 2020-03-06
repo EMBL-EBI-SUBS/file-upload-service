@@ -10,7 +10,6 @@ import uk.ac.ebi.subs.fileupload.config.MessagingConfiguration;
 import uk.ac.ebi.subs.fileupload.model.globus.GlobusShareRequest;
 import uk.ac.ebi.subs.fileupload.model.globus.GlobusUploadedFilesNotification;
 import uk.ac.ebi.subs.fileupload.services.globus.GlobusService;
-import uk.ac.ebi.subs.messaging.Topics;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
@@ -27,7 +26,7 @@ public class GlobusEventListener {
     @Autowired
     private GlobusService globusService;
 
-    @RabbitListener(queues = Topics.GLOBUS_SHARE_REQUEST)
+    @RabbitListener(queues = MessagingConfiguration.GLOBUS_SHARE_REQUEST_QUEUE)
     public String onGlobusShareRequest(GlobusShareRequest shareRequest) {
         LOGGER.debug("Globus share request received : {}", shareRequest);
 
@@ -40,7 +39,7 @@ public class GlobusEventListener {
         return null;
     }
 
-    @RabbitListener(queues = Topics.GLOBUS_UPLOADED_FILES_NOTIFICATION)
+    @RabbitListener(queues = MessagingConfiguration.GLOBUS_UPLOADED_FILES_NOTIFICATION_QUEUE)
     public void onUploadedFilesNotification(GlobusUploadedFilesNotification notification) {
         LOGGER.debug("Globus uploaded files notification received : {}", notification);
 
@@ -52,7 +51,7 @@ public class GlobusEventListener {
         }
     }
 
-    @RabbitListener(queues = MessagingConfiguration.FU_GLOBUS_SUB_UNREGISTER)
+    @RabbitListener(queues = MessagingConfiguration.GLOBUS_SUB_UNREGISTER_QUEUE)
     public void onGlobusSubmissionUnregister(SubmissionEnvelope subEnvelope) {
         String submissionId = subEnvelope.getSubmission().getId();
 
