@@ -66,7 +66,7 @@ public class GlobusApiClient {
             HashMap<String, String> req = new HashMap<>();
             req.put("DATA_TYPE", "shared_endpoint");
             req.put("display_name", displayName);
-            req.put("host_endpoint", hostPath);
+            req.put("host_endpoint", hostEndpoint);
             req.put("host_path", hostPath);
             req.put("description", description);
 

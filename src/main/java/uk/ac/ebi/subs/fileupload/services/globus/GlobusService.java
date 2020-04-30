@@ -83,17 +83,22 @@ public class GlobusService {
                 .map(filePath -> new java.io.File(filePath.toUri()))
                 .map(file -> createFileObject(owner, submissionId, file))
                 .forEach(fileObj -> {
-                    fileRepository.save(fileObj);
+                    try {
+                        fileRepository.save(fileObj);
 
-                    moveFile(fileObj);
+                        moveFile(fileObj);
 
-                    fileObj.setUploadPath(fileObj.getTargetPath());
-                    fileObj.setStatus(FileStatus.READY_FOR_CHECKSUM);
-                    fileRepository.save(fileObj);
+                        fileObj.setUploadPath(fileObj.getTargetPath());
+                        fileObj.setStatus(FileStatus.READY_FOR_CHECKSUM);
+                        fileRepository.save(fileObj);
 
-                    eventHandlerService.validateFileReference(fileObj.getGeneratedTusId());
+                        File postReferenceValidationFile = eventHandlerService.validateFileReference(fileObj.getGeneratedTusId());
 
-                    processFile(fileObj);
+                        processFile(postReferenceValidationFile);
+                    } catch (Exception ex) {
+                        throw new RuntimeException("Error processing uploaded file. Owner : " + owner +
+                                ", SubmissionID : " + submissionId + ", FileTusID : " + fileObj.getGeneratedTusId(), ex);
+                    }
                 });
     }
 
@@ -188,6 +193,8 @@ public class GlobusService {
     }
 
     private GlobusShare createGlobusShare(String owner, String submissionId) {
+        LOGGER.debug("Creating globus share. owner : {}, submissionId : {}", owner, submissionId);
+
         GlobusShare gs = new GlobusShare();
         gs.setOwner(owner);
         gs.getRegisteredSubmissionIds().add(submissionId);
@@ -204,33 +211,53 @@ public class GlobusService {
     }
 
     private void createUploadDirectory(GlobusShare gs) {
+        LOGGER.debug("Creating upload directory for owner : {}", gs.getOwner());
+
         Path targetPath = Paths.get(baseUploadDir, gs.getOwner());
         if (Files.notExists(targetPath)) {
             try {
+                LOGGER.debug("Creating upload directory for owner : {}, directory : {}", gs.getOwner(), targetPath.toString());
                 Files.createDirectories(targetPath);
+                LOGGER.debug("Setting permissions on upload directory for owner : {}, directory : {}", gs.getOwner(), targetPath.toString());
+
+                ProcessBuilder pb = new ProcessBuilder("/usr/bin/chmod", "g+w", targetPath.toString());
+                Process proc = pb.start();
+                if (proc.waitFor() != 0) {
+                    throw new RuntimeException("Error setting permissions on upload directory. Owner : " + gs.getOwner() + ", Directory : " + targetPath.toString());
+                }
             } catch (Exception ex) {
+                LOGGER.debug("Error creating upload directory for owner : {}. Deleting share document.", gs.getOwner());
+
                 //delete the share object to make retry possible.
                 globusShareRepository.delete(gs.getId());
 
                 throw new RuntimeException("Error creating upload directory for owner : " + gs.getOwner(), ex);
             }
+        } else {
+            LOGGER.debug("Upload directory already exists for owner : {}", gs.getOwner());
         }
     }
 
     private GlobusShare createShareLink(GlobusShare gs) {
+        LOGGER.debug("Creating share link for owner : {}", gs.getOwner());
+
         String sharedEndpointId = null;
         try {
             sharedEndpointId = globusApiClient.createShare(
                     hostEndpointBaseDir + "/" + gs.getOwner(), UUID.randomUUID().toString(), "");
         } catch (Exception ex) {
+            LOGGER.debug("Error creating globus share for owner : {}. Deleting share document.", gs.getOwner());
+
             //delete the share object to make retry possible.
             globusShareRepository.delete(gs.getId());
 
-            throw ex;
+            throw new RuntimeException("Error creating globus share for owner : " + gs.getOwner(), ex);
         }
 
         gs.setSharedEndpointId(sharedEndpointId);
         gs.setShareLink(String.format(shareUrlFormat, sharedEndpointId));
+
+        LOGGER.debug("Updating share document with new endpoint and share link. Owner : {}", gs.getOwner());
 
         return globusShareRepository.save(gs);
     }
@@ -269,7 +296,7 @@ public class GlobusService {
 
     private void moveFile(File file) {
         try {
-            Files.createDirectories(Paths.get(file.getTargetPath()));
+            Files.createDirectories(Paths.get(file.getTargetPath()).getParent());
             Files.move(Paths.get(file.getUploadPath()), Paths.get(file.getTargetPath()), StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
             throw new RuntimeException("Error while moving file : " + file.toString(), e);

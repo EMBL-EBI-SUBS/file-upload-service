@@ -136,7 +136,7 @@ private Object sshRun(String jarDeployDir, String uploadJarFileName) {
 	ssh.run {
 		session(remotes.role(gradle_env)) {
 			execute "/homes/sub_adm/create_dirs.sh $gradle_env $project.name", ignoreError: false
-			println "Uploading jar $jar.archivePath.name to $jarDeployDir/$uploadJarFileName  area on $remote"
+			println "Uploading jar $jar.archivePath.name to $jarDeployDir/$uploadJarFileName area on $remote"
 			put(jar.archivePath.absolutePath, "$jarDeployDir/$uploadJarFileName")
 			println "creating symbolic link to $jar.archiveName"
 			def result = execute "ln -s -f $jarDeployDir/$uploadJarFileName $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true

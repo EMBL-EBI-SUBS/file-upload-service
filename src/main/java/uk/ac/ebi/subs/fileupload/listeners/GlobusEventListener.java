@@ -31,7 +31,10 @@ public class GlobusEventListener {
         LOGGER.debug("Globus share request received : {}", shareRequest);
 
         try {
-            return globusService.getShareLink(shareRequest.getOwner(), shareRequest.getSubmissionId());
+            String shareLink = globusService.getShareLink(shareRequest.getOwner(), shareRequest.getSubmissionId());
+
+            LOGGER.debug("Returning share link in response to request : {}", shareRequest);
+            return shareLink;
         } catch (Exception ex) {
             LOGGER.error("Error creating share for request : {}", shareRequest, ex);
         }
