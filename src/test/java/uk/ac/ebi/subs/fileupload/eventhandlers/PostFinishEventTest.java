@@ -55,13 +55,13 @@ public class PostFinishEventTest {
 
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
-    private static final String TARGET_FOLDER_BASE = "src/test/resources/ready_to_agent";
+    private static final String TARGET_FOLDER_BASE = "src/test/resources" + FILE_SEPARATOR + "ready_to_agent";
     private static final String FOLDER1 = FILE_SEPARATOR + SUBMISSION_ID.substring(0, 1);
     private static final String FOLDER2 = FILE_SEPARATOR + SUBMISSION_ID.substring(1, 2);
     private static final String FOLDER3 = FILE_SEPARATOR + SUBMISSION_ID;
     private static final String TARGET_FOLDER = TARGET_FOLDER_BASE + FOLDER1 + FOLDER2 + FOLDER3;
     private static final String READY_TO_AGENT_FILE = FILENAME;
-    private static final String TEST_FILE_TO_UPLOAD = "src/test/resources/abcdefgh12345678.bin";
+    private static final String TEST_FILE_TO_UPLOAD = "src/test/resources" + FILE_SEPARATOR + "abcdefgh12345678.bin";
 
     private static final long OFFSET_SIZE_1 = 1000L;
     private static final long TOTAL_SIZE = 8000L;

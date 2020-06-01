@@ -8,12 +8,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.subs.fileupload.services.ValidationService;
 import uk.ac.ebi.subs.fileupload.services.globus.GlobusApiClient;
 import uk.ac.ebi.subs.fileupload.services.globus.GlobusService;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 import java.io.IOException;
@@ -40,13 +42,18 @@ public class HealthEndpointCorsTest {
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @MockBean
+    private MappingMongoConverter mappingMongoConverter;
+
+    @MockBean
     private FileRepository fileRepository;
 
     @MockBean
-    private GlobusApiClient globusApiClient;
+    private SubmissionRepository submissionRepository;
 
     @MockBean
     private GlobusService globusService;
+    @MockBean
+    private GlobusApiClient globusApiClient;
 
     @Test
     public void emulateCorsPreflight() throws IOException, Exception {
