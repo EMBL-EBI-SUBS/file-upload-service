@@ -5,6 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.fileupload.config.MessagingConfiguration;
 import uk.ac.ebi.subs.fileupload.model.globus.GlobusShareRequest;
@@ -13,6 +16,8 @@ import uk.ac.ebi.subs.fileupload.services.globus.GlobusService;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+
+import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -27,14 +32,15 @@ public class GlobusEventListener {
     private GlobusService globusService;
 
     @RabbitListener(queues = MessagingConfiguration.GLOBUS_SHARE_REQUEST_QUEUE)
-    public String onGlobusShareRequest(GlobusShareRequest shareRequest) {
+    public Message<String> onGlobusShareRequest(GlobusShareRequest shareRequest) {
         LOGGER.debug("Globus share request received : {}", shareRequest);
 
         try {
             String shareLink = globusService.getShareLink(shareRequest.getOwner(), shareRequest.getSubmissionId());
 
             LOGGER.debug("Returning share link in response to request : {}", shareRequest);
-            return shareLink;
+
+            return MessageBuilder.createMessage(shareLink, new MessageHeaders(new HashMap<>()));
         } catch (Exception ex) {
             LOGGER.error("Error creating share for request : {}", shareRequest, ex);
         }
