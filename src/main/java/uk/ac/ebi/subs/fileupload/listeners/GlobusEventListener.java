@@ -61,7 +61,7 @@ public class GlobusEventListener {
         Submission submission = submissionRepository.findOne(submissionId);
 
         LOGGER.debug("Globus submission unregister message received. Owner : {}, SubmissionID : {}",
-                submissionId, submission.getCreatedBy());
+                submission.getCreatedBy(), submissionId);
 
         try {
             globusService.unregisterSubmission(submission.getCreatedBy(), submissionId);

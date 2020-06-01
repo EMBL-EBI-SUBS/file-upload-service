@@ -73,13 +73,16 @@ public class GlobusApiClient {
             RequestEntity<HashMap<String, String>> requestEntity = new RequestEntity<>(req, headers, HttpMethod.POST,
                     getUri(transferApiUrl, TRANSFER_API_VERSION_0_10, "shared_endpoint"));
 
+            LOGGER.debug("Creating shared endpoint. HostPath : {}, DisplayName : {}", hostPath, displayName);
+
             return restTemplate.exchange(requestEntity, ObjectNode.class);
         };
 
         ResponseEntity<ObjectNode> respEntity = execute(op);
         if (respEntity.getStatusCodeValue() == 400) {
              ObjectNode resp = respEntity.getBody();
-             if (resp.has("code") && resp.get("code").equals("ClientError.ActivationRequired")) {
+             if (resp.has("code") && resp.get("code").asText().equals("ClientError.ActivationRequired")) {
+                 LOGGER.debug("Endpoint activation required. HostPath : {}, DisplayName : {}", hostPath, displayName);
                  activateEndpoint();
                  respEntity = execute(op);
                  if (!respEntity.getStatusCode().equals(HttpStatus.CREATED)) {
@@ -90,7 +93,12 @@ public class GlobusApiClient {
              }
         }
 
-        return respEntity.getBody().get("id").asText();
+        String sharedEndpointId = respEntity.getBody().get("id").asText();
+
+        LOGGER.debug("Shared endpoint created. HostPath : {}, DisplayName : {}, SharedEndpointID : {}",
+                hostPath, displayName, sharedEndpointId);
+
+        return sharedEndpointId;
     }
 
     public void deleteEndpoint(String endpointId) {
@@ -100,11 +108,15 @@ public class GlobusApiClient {
             RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.DELETE,
                     getUri(transferApiUrl, TRANSFER_API_VERSION_0_10, "endpoint/" + endpointId));
 
+            LOGGER.debug("Deleting shared endpoint : {}", endpointId);
+
             return restTemplate.exchange(requestEntity, ObjectNode.class);
         });
 
         if (!resp.getStatusCode().equals(HttpStatus.OK)) {
             throw new RuntimeException(buildExceptionError(resp));
+        } else {
+            LOGGER.debug("Shared endpoint deleted : {}", endpointId);
         }
     }
 
@@ -115,10 +127,14 @@ public class GlobusApiClient {
         RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.POST,
                 getUri(authApiUrl, AUTH_API_VERSION_2, "oauth2/token?grant_type=refresh_token&refresh_token=" + transferRefreshToken));
 
+        LOGGER.debug("Refreshing access token.");
+
         ResponseEntity<ObjectNode> resp = restTemplate.exchange(requestEntity, ObjectNode.class);
         if (resp.getStatusCode() != HttpStatus.OK) {
             throw new RuntimeException(buildExceptionError(resp));
         }
+
+        LOGGER.debug("Refreshed access token acquired.");
 
         return resp.getBody().get("access_token").asText();
     }
@@ -132,11 +148,15 @@ public class GlobusApiClient {
             RequestEntity<ObjectNode> requestEntity = new RequestEntity<>(req, headers, HttpMethod.POST,
                     getUri(transferApiUrl, TRANSFER_API_VERSION_0_10, "endpoint/" + hostEndpoint + "/activate"));
 
+            LOGGER.debug("Activating host endpoint : {}", hostEndpoint);
+
             return restTemplate.exchange(requestEntity, ObjectNode.class);
         });
 
         if (!respEntity.getStatusCode().equals(HttpStatus.OK)) {
             throw new RuntimeException(buildExceptionError(respEntity));
+        } else {
+            LOGGER.debug("Host endpoint activated : {}", hostEndpoint);
         }
     }
 
@@ -147,12 +167,16 @@ public class GlobusApiClient {
             RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET,
                     getUri(transferApiUrl, TRANSFER_API_VERSION_0_10, "endpoint/" + hostEndpoint + "/activation_requirements"));
 
+            LOGGER.debug("Fetching activation requirements for host endpoint : {}", hostEndpoint);
+
             return restTemplate.exchange(requestEntity, ObjectNode.class);
         });
 
         if (respEntity.getStatusCodeValue() != 200) {
             throw new RuntimeException(buildExceptionError(respEntity));
         }
+
+        LOGGER.debug("Activation requirements fetched for host endpoint : {}", hostEndpoint);
 
         return respEntity.getBody();
     }
@@ -218,6 +242,8 @@ public class GlobusApiClient {
                 && resp.getBody() != null
                 && resp.getBody().get("code").asText().equals("AuthenticationFailed")) {
 
+            LOGGER.debug("Authentication failed. Token may have been expired. Response : {}", resp.getBody().toString());
+
             transferAccessToken = getRefreshedAccessToken();
             resp = operation.get();
         }
@@ -227,6 +253,7 @@ public class GlobusApiClient {
 
     @PostConstruct
     private void init() {
+        LOGGER.debug("Acquiring access token at startup.");
         try {
             transferAccessToken = getRefreshedAccessToken();
         } catch (Exception ex) {

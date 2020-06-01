@@ -76,28 +76,52 @@ public class GlobusService {
 
     public void processUploadedFiles(String owner, String submissionId, List<String> files) {
         files.stream()
-                .filter(file -> file != null && !file.isBlank()
-                            && fileRepository.findByFilenameAndSubmissionId(file, submissionId) == null)
+                .filter(file -> {
+                    if (file != null && !file.isBlank()
+                            && fileRepository.findByFilenameAndSubmissionId(file, submissionId) == null) {
+                        return true;
+                    } else {
+                        LOGGER.debug("File already registered with the submission. Owner : {}, SubmissionID : {}, File : {}",
+                                owner, submissionId, file);
+                        return false;
+                    }
+                })
                 .map(file -> Paths.get(baseUploadDir, owner, file))
-                .filter(filePath -> Files.exists(filePath))
+                .filter(filePath -> {
+                    if (Files.exists(filePath)) {
+                        return true;
+                    } else {
+                        LOGGER.debug("File does not exist in the upload directory. Owner : {}, SubmissionID : {}, Path : {}",
+                                owner, submissionId, filePath);
+                        return false;
+                    }
+                })
                 .map(filePath -> new java.io.File(filePath.toUri()))
                 .map(file -> createFileObject(owner, submissionId, file))
                 .forEach(fileObj -> {
                     try {
+                        LOGGER.debug("Saving file document. Owner : {}, SubmissionID : {}, File : {}",
+                                owner, submissionId, fileObj.getFilename());
                         fileRepository.save(fileObj);
 
+                        LOGGER.debug("Moving file to DSP staging area. Owner : {}, SubmissionID : {}, File : {}",
+                                owner, submissionId, fileObj.getFilename());
                         moveFile(fileObj);
 
                         fileObj.setUploadPath(fileObj.getTargetPath());
                         fileObj.setStatus(FileStatus.READY_FOR_CHECKSUM);
                         fileRepository.save(fileObj);
 
+                        LOGGER.debug("Initiating file reference validation. Owner : {}, SubmissionID : {}, File : {}",
+                                owner, submissionId, fileObj.getFilename());
                         File postReferenceValidationFile = eventHandlerService.validateFileReference(fileObj.getGeneratedTusId());
 
+                        LOGGER.debug("Initiating file processing. Owner : {}, SubmissionID : {}, File : {}",
+                                owner, submissionId, fileObj.getFilename());
                         processFile(postReferenceValidationFile);
                     } catch (Exception ex) {
                         throw new RuntimeException("Error processing uploaded file. Owner : " + owner +
-                                ", SubmissionID : " + submissionId + ", FileTusID : " + fileObj.getGeneratedTusId(), ex);
+                                ", SubmissionID : " + submissionId + ", File : " + fileObj.getFilename(), ex);
                     }
                 });
     }
@@ -106,6 +130,9 @@ public class GlobusService {
         GlobusShare gs = globusShareRepository.findOne(owner);
         if (gs == null
                 || gs.getRegisteredSubmissionIds().stream().filter(subId -> subId.equals(submissionId)).findFirst().isEmpty()) {
+            LOGGER.debug("Submission does not need to unregister from Globus share. Owner : {}, SubmissionID : {}",
+                    owner, submissionId);
+
             return;
         }
 
@@ -115,12 +142,19 @@ public class GlobusService {
                 FindAndModifyOptions.options().returnNew(true).upsert(false),
                 GlobusShare.class);
 
+        LOGGER.debug("Submission unregistered from Globus share. Owner : {}, SubmissionID : {}", owner, submissionId);
+
         gs = mongoOperations.findAndRemove(
                 Query.query(Criteria.where("owner").is(owner).and("registeredSubmissionIds").size(0)),
                 GlobusShare.class);
 
         if (gs != null) {
+            LOGGER.debug("No submission registered anymore. Deleting Globus share. Owner : {}", owner);
+
             globusApiClient.deleteEndpoint(gs.getSharedEndpointId());
+        } else {
+            LOGGER.debug("Cannot delete Globus share. Some submissions are still registered. Owner : {}, RegisteredSubmissionCount : {}",
+                    owner, gs.getRegisteredSubmissionIds().size());
         }
     }
 
@@ -141,24 +175,32 @@ public class GlobusService {
         for (int i = 0; i < 30; i++) {
             do {
                 //See if a share exists already.
+                LOGGER.debug("Looking for existing share. Owner : {}, SubmissionID : {}", owner, submissionId);
                 gs = globusShareRepository.findOne(owner);
                 if (gs == null) {
+                    LOGGER.debug("No existing share found. Creating new one. Owner : {}, SubmissionID : {}",
+                            owner, submissionId);
+
                     //Attempt to create a new one if it does not.
-                    //Following method attempts to create a unique share against the given owner. If multiple threads call this method
-                    //then all except the first one that managed to create a share will fail and will return with a 'null' value.
+                    //Following method attempts to create a unique share against the given owner. If this method is called simultaneously
+                    //then all callers except the first one that managed to create a share will fail and will return with a 'null' value.
                     gs = createGlobusShare(owner, submissionId);
                     if (gs != null) {
+                        LOGGER.debug("Globus share created. Owner : {}, SubmissionID : {}", owner, submissionId);
                         return gs;
                     }
 
-                    //gs = null means that some other thread managed to create a share.
+                    //gs = null means that some other caller managed to create a share.
                     //Reset the outer wait loop and read that share document in the next iteration.
                     i = 0;
                 }
             } while (gs == null);
 
-            //Share link becomes available after the creation of the document.
+            //Share link becomes available a little after the creation of the document . . .
             if (gs.getSharedEndpointId() != null) {
+                LOGGER.debug("Globus share link is available. Registering submission. Owner : {}, SubmissionID : {}",
+                        owner, submissionId);
+
                 //Register submission with the share.
                 gs = mongoOperations.findAndModify(
                         Query.query(Criteria.where("owner").is(owner)),
@@ -166,17 +208,23 @@ public class GlobusService {
                         FindAndModifyOptions.options().returnNew(true).upsert(false),
                         GlobusShare.class);
 
-                //If the share got removed before the above operation . . .
+                //If the share got removed before the above operation (https://en.wikipedia.org/wiki/Murphy%27s_law) . . .
                 if (gs == null) {
-                    LOGGER.debug("Share no longer available for registration. Owner : {}, SubmissionID : {}",
+                    LOGGER.debug("Share got removed after availability but before registration. Owner : {}, SubmissionID : {}",
                             owner, submissionId);
                     //. . . reset the waiting period and repeat.
                     i = 0;
                 } else {
+                    LOGGER.debug("Submission registered with an existing share. Owner : {}, SubmissionID : {}",
+                            owner, submissionId);
                     break;
                 }
+            } else {
+                LOGGER.debug("Globus share link not available yet, continue to wait. Owner : {}, SubmissionID : {}",
+                        owner, submissionId);
             }
 
+            // . . . if the link is not available yet then keep waiting and checking back.
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -193,8 +241,6 @@ public class GlobusService {
     }
 
     private GlobusShare createGlobusShare(String owner, String submissionId) {
-        LOGGER.debug("Creating globus share. owner : {}, submissionId : {}", owner, submissionId);
-
         GlobusShare gs = new GlobusShare();
         gs.setOwner(owner);
         gs.getRegisteredSubmissionIds().add(submissionId);
@@ -204,7 +250,7 @@ public class GlobusService {
             createUploadDirectory(gs);
             return createShareLink(gs);
         } catch (DuplicateKeyException ex) {
-            LOGGER.info("Cannot create a another share document for the given owner : {}, submissionId : {}", owner, submissionId);
+            LOGGER.info("Cannot create a another share document for the given Owner : {}, SubmissionId : {}", owner, submissionId);
         }
 
         return null;
