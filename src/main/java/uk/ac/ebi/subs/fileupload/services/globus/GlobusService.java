@@ -34,6 +34,8 @@ import java.util.UUID;
 @Service
 public class GlobusService {
 
+    private static int GLOBUS_SHARE_AVAILABILITY_WAIT_ITERATIONS = 30;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobusService.class);
 
     @Autowired
@@ -171,8 +173,8 @@ public class GlobusService {
     private GlobusShare getOrCreateGlobusShare(String owner, String submissionId) {
         GlobusShare gs = null;
 
-        //Wait for 1 second on each iteration of this loop until the share becomes available. 1sec X 30 = 30 seconds wait period.
-        for (int i = 0; i < 30; i++) {
+        //Wait and check if the share becomes available every second.
+        for (int i = 0; i < GLOBUS_SHARE_AVAILABILITY_WAIT_ITERATIONS; i++) {
             do {
                 //See if a share exists already.
                 LOGGER.debug("Looking for existing share. Owner : {}, SubmissionID : {}", owner, submissionId);
