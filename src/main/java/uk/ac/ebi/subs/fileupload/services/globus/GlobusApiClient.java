@@ -79,7 +79,7 @@ public class GlobusApiClient {
         };
 
         ResponseEntity<ObjectNode> respEntity = execute(op);
-        if (respEntity.getStatusCodeValue() == 400) {
+        if (respEntity.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
              ObjectNode resp = respEntity.getBody();
              if (resp.has("code") && resp.get("code").asText().equals("ClientError.ActivationRequired")) {
                  LOGGER.debug("Endpoint activation required. HostPath : {}, DisplayName : {}", hostPath, displayName);
@@ -91,6 +91,8 @@ public class GlobusApiClient {
              } else {
                  throw new RuntimeException(buildExceptionError(respEntity));
              }
+        } else if (!respEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+            throw new RuntimeException(buildExceptionError(respEntity));
         }
 
         String sharedEndpointId = respEntity.getBody().get("id").asText();
@@ -117,6 +119,32 @@ public class GlobusApiClient {
             throw new RuntimeException(buildExceptionError(resp));
         } else {
             LOGGER.debug("Shared endpoint deleted : {}", endpointId);
+        }
+    }
+
+    public void addAllAuthenticatedUsersACLToEndpoint(String endpointId) {
+        ResponseEntity<ObjectNode> respEntity = execute(() -> {
+            MultiValueMap<String, String> headers = buildAuthorizationHeader();
+
+            HashMap<String, String> req = new HashMap<>();
+            req.put("DATA_TYPE", "access");
+            req.put("principal_type", "all_authenticated_users");
+            req.put("principal", "");
+            req.put("path", "/");
+            req.put("permissions", "rw");
+
+            RequestEntity<HashMap<String, String>> requestEntity = new RequestEntity<>(req, headers, HttpMethod.POST,
+                    getUri(transferApiUrl, TRANSFER_API_VERSION_0_10, "endpoint/" + endpointId + "/access"));
+
+            LOGGER.debug("Adding all_authenticated_users ACL to endpoint : {}", endpointId);
+
+            return restTemplate.exchange(requestEntity, ObjectNode.class);
+        });
+
+        if (!respEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+            throw new RuntimeException(buildExceptionError(respEntity));
+        } else {
+            LOGGER.debug("ACL all_authenticated_users added to endpoint : {}", endpointId);
         }
     }
 
