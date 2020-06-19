@@ -293,6 +293,8 @@ public class GlobusService {
         try {
             sharedEndpointId = globusApiClient.createShare(
                     hostEndpointBaseDir + "/" + gs.getOwner(), UUID.randomUUID().toString(), "");
+
+            addAccessRuleForShare(gs.getOwner(), sharedEndpointId);
         } catch (Exception ex) {
             LOGGER.debug("Error creating globus share for owner : {}. Deleting share document.", gs.getOwner());
 
@@ -308,6 +310,32 @@ public class GlobusService {
         LOGGER.debug("Updating share document with new endpoint and share link. Owner : {}", gs.getOwner());
 
         return globusShareRepository.save(gs);
+    }
+
+    private void addAccessRuleForShare(String owner, String sharedEndpointId) {
+        LOGGER.debug("Adding access rule for share. Owner : {}, SharedEndpointID : {}", owner, sharedEndpointId);
+
+        try {
+            globusApiClient.addAllAuthenticatedUsersACLToEndpoint(sharedEndpointId);
+        } catch (Exception ex) {
+            LOGGER.debug("Error adding share access rule for owner : {}. Deleting shared endpoint : {}",
+                    owner, sharedEndpointId);
+
+            try {
+                //delete the share to make retry possible.
+                globusApiClient.deleteEndpoint(sharedEndpointId);
+            } catch (Exception ex2) {
+                LOGGER.error("Error deleting shared endpoint due to access rule creation failure. Owner : {}, SharedEndpointID : {}. " +
+                                "Attached is the original exception object thrown at the time of access rule creation.",
+                        owner, sharedEndpointId, ex);
+
+                //so the caller can delete the share document.
+                throw ex2;
+            }
+
+            //so the caller can delete the share document.
+            throw ex;
+        }
     }
 
     private File createFileObject(String owner, String submissionId, java.io.File file) {
