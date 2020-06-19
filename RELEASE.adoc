@@ -4,6 +4,14 @@
 This pages contains links to release notes for DSP's File Upload Service application.
 
 [[section]]
+== v0.13.1 Release notes
+
+New features:
+----------------
+1. Support for file uploading via Globus.
+----------------
+
+[[section]]
 == v0.11.0 Release notes
 
 Platform upgrades:
